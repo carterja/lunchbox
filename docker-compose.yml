@@ -1,0 +1,16 @@
+services:
+  app:
+    build: .
+    ports:
+      - "9515:9515"   # host:container — reverse proxy to this port
+    environment:
+      - NODE_ENV=production
+      - PORT=9515
+    volumes:
+      - food-data:/app/server/data    # SQLite DB and food_types
+      - food-uploads:/app/server/uploads
+    restart: unless-stopped
+
+volumes:
+  food-data:
+  food-uploads:

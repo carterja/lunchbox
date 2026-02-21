@@ -1,0 +1,39 @@
+[
+  {
+    "id": "7bf2ca3a-6022-4f50-8e04-d9c232437f2a",
+    "title": "Google",
+    "url": "https://www.google.com",
+    "type": "General",
+    "dateAdded": "2026-02-21T19:37:17.001Z"
+  },
+  {
+    "id": "43849a54-cd8f-4259-ae3c-e4d4d995cd36",
+    "title": "Google",
+    "url": "https://www.google.com",
+    "type": "General",
+    "dateAdded": "2026-02-21T20:02:01.606Z"
+  },
+  {
+    "id": "b658d8be-c8d0-4d7f-889f-22cb6357b35e",
+    "title": "Test Recipe",
+    "type": "General",
+    "dateAdded": "2026-02-21T20:18:26.786Z"
+  },
+  {
+    "id": "e0e5ccd2-b98d-4976-91ee-b5744ceba90e",
+    "title": "Chicken Stir Fry",
+    "url": "https://therealfooddietitians.com/chicken-stir-fry/",
+    "type": "General",
+    "rawText": "",
+    "dateAdded": "2026-02-21T20:22:59.698Z"
+  },
+  {
+    "id": "f1d317aa-0d73-41d0-acee-8a54e788902b",
+    "title": "Stir Fry",
+    "screenshot": "/uploads/3ec505d377871c40ad454a7bfd983530",
+    "type": "Scanned",
+    "rawText": "INSTRUCTIONS\n\n1 Toa large skillet over medium-high heat, add 1 tablespoon of olive oil.\nOnce the oil shimmers, add the sliced chicken and season with salt and\npepper. Cook until lightly browned on one side, 5-6 minutes, then stir and\nflip the chicken. When the chicken is cooked through, transfer it to a plate\nand set aside.\n\n2 Add the remaining 1 tablespoon olive oil to the hot skillet. Then, add the\npeppers, peas, and white parts of green onion. Cook the vegetables until\ntender, about 4-5 minutes, stirring frequently.\n\n3 While the veggies are cooking, in a small bowl, whisk together the coconut\naminos, toasted sesame oil, tomato paste, honey, garlic, ginger, crushed\nred pepper flakes, and black pepper. Set aside.\n\n4 Once the vegetables are crisp-tender, return the chicken to the skillet and\ntoss together. Pour the sauce over the top and mix well, making sure\neverything is coated, and bring the sauce to a boil. Once boiling, reduce\nthe heat and simmer until the sauce has thickened up slightly, about 2\nminutes.\n\n5 If desired, serve stir fry over rice and garnish with sliced green onion tops\nand sesame seeds.\n\n6 Store leftovers in an airtight container in the refrigerator for up to 4 days\nor freeze for up to 3 months.",
+    "instructions": [],
+    "dateAdded": "2026-02-21T20:28:50.842Z"
+  }
+]
