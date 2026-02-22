@@ -205,24 +205,23 @@
           </div>
 
           <!-- Recipe panel: formatted read-only -->
-          <div id="detail-recipe-panel" class="p-6 overflow-y-auto space-y-6 flex-1">
+          <div id="detail-recipe-panel" class="px-6 pb-6 pt-6 overflow-y-auto space-y-6 flex-1">
             <div id="detail-image-container" class="hidden">
               <img id="detail-image" src="" class="w-full max-h-96 object-contain rounded-xl border border-slate-700">
             </div>
 
-            <div id="detail-url-container" class="hidden text-sm">
-              <h3 class="font-semibold text-slate-400 uppercase tracking-wider mb-1">Source URL</h3>
-              <a id="detail-url" href="#" target="_blank" class="text-indigo-400 hover:text-indigo-300 break-all flex items-center">
-                <span id="detail-url-text"></span>
-                <svg class="w-4 h-4 ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-              </a>
-            </div>
-            <div id="detail-pdf-container" class="hidden text-sm">
-              <h3 class="font-semibold text-slate-400 uppercase tracking-wider mb-1">PDF</h3>
-              <a id="detail-pdf-link" href="#" download class="text-indigo-400 hover:text-indigo-300 flex items-center gap-2">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                Download PDF
-              </a>
+            <div id="detail-meta-bar" class="flex flex-wrap items-center gap-2 text-sm">
+              <div id="detail-tags" class="flex flex-wrap gap-1.5"></div>
+              <div id="detail-meta-links" class="flex flex-wrap items-center gap-2 text-slate-400">
+                <a id="detail-url" href="#" target="_blank" rel="noopener noreferrer" class="hidden text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1" title="">
+                  <span id="detail-url-text"></span>
+                  <svg class="w-3.5 h-3.5 flex-shrink-0 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                </a>
+                <a id="detail-pdf-link" href="#" download class="hidden text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                  <span>PDF</span>
+                </a>
+              </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

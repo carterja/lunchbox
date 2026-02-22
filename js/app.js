@@ -52,11 +52,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const detailTitle = document.getElementById('detail-title');
   const detailImage = document.getElementById('detail-image');
   const detailImageContainer = document.getElementById('detail-image-container');
+  const detailTags = document.getElementById('detail-tags');
+  const detailMetaBar = document.getElementById('detail-meta-bar');
   const detailUrl = document.getElementById('detail-url');
   const detailUrlText = document.getElementById('detail-url-text');
-  const detailUrlContainer = document.getElementById('detail-url-container');
   const detailPdfLink = document.getElementById('detail-pdf-link');
-  const detailPdfContainer = document.getElementById('detail-pdf-container');
   const detailRawText = document.getElementById('detail-raw-text');
   const detailRawTextContainer = document.getElementById('detail-raw-text-container');
   const detailIngredients = document.getElementById('detail-ingredients');
@@ -370,12 +370,14 @@ document.addEventListener('DOMContentLoaded', () => {
         ? (item.type === 'Scanned' ? '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-200 uppercase">Scanned</span>' : '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-200 uppercase">Recipe</span>')
         : '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-200 uppercase">To-Go</span>';
       const foodTypeBadge = item.foodType ? `<span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-600 text-slate-200">${item.foodType}</span>` : '';
-      const tagBadges = (item.tags || []).slice(0, 3).map((t) => `<span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-indigo-500/30 text-indigo-200">${t}</span>`).join('');
+      const tagBadges = (item.tags || []).slice(0, 3).map((t) => `<span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-indigo-500/30 text-indigo-200">${t}</span>`).join(' ');
       const badge = [typeBadge, foodTypeBadge, tagBadges].filter(Boolean).join(' ');
       const title = isRecipe ? item.title : item.name;
-      const action = isRecipe
-        ? (item.url ? `<span class="text-indigo-300 text-xs flex items-center gap-1">View${linkIcon}</span>` : '<span class="text-slate-500 text-xs">No link</span>')
-        : (item.orderingUrl && item.orderingUrl.trim() ? `<span class="text-indigo-300 text-xs flex items-center gap-1">Order${linkIcon}</span>` : '<span class="text-slate-500 text-xs">Add link</span>');
+      const hasAction = isRecipe ? !!item.url : !!(item.orderingUrl && item.orderingUrl.trim());
+      const actionLabel = isRecipe
+        ? (item.url ? 'View' : 'No link')
+        : (item.orderingUrl && item.orderingUrl.trim() ? 'Order' : 'Add link');
+      const actionBtn = `<span class="card-action-btn inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${hasAction ? 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30' : 'bg-slate-700/50 text-slate-500'}">${actionLabel}${hasAction ? linkIcon : ''}</span>`;
       const dateStr = new Date(item.dateAdded).toLocaleDateString();
       const card = document.createElement('div');
       card.className = 'bg-slate-900 rounded-xl border border-slate-800 overflow-hidden hover:border-slate-600 hover:shadow-md transition-all duration-200 cursor-pointer flex min-h-[88px]';
@@ -384,13 +386,18 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center overflow-hidden">
             ${logo ? `<img src="${logo}" alt="" class="w-8 h-8 object-contain logo-img"><span class="hidden logo-fallback w-8 h-8 flex items-center justify-center text-slate-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></span>` : '<span class="text-slate-500 flex"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></span>'}
           </div>
-          <div class="flex-1 min-w-0 flex flex-col justify-center">
-            <div class="flex items-start justify-between gap-2">
-              <h3 class="text-sm font-bold text-slate-100 truncate leading-tight">${title}</h3>
-              ${isRecipe ? '' : '<button type="button" class="card-edit-btn flex-shrink-0 text-slate-500 hover:text-slate-300 text-xs font-medium">Edit</button>'}
+          <div class="flex-1 min-w-0 flex flex-col justify-between">
+            <div>
+              <div class="flex items-start justify-between gap-2">
+                <h3 class="text-sm font-bold text-slate-100 truncate leading-tight">${title}</h3>
+                ${isRecipe ? '' : '<button type="button" class="card-edit-btn flex-shrink-0 text-slate-500 hover:text-slate-300 text-xs font-medium">Edit</button>'}
+              </div>
+              <div class="flex items-center gap-2 mt-0.5 flex-wrap">${badge}</div>
             </div>
-            <div class="flex items-center gap-2 mt-0.5 flex-wrap">${badge}<span class="text-slate-500 text-xs">·</span>${action}</div>
-            <p class="text-slate-500 text-[10px] mt-1">${dateStr}</p>
+            <div class="flex items-end justify-between gap-2 mt-2">
+              <p class="text-slate-500 text-[10px]">${dateStr}</p>
+              <span class="card-action-btn-wrapper">${actionBtn}</span>
+            </div>
           </div>
         </div>
       `;
@@ -542,20 +549,28 @@ document.addEventListener('DOMContentLoaded', () => {
       detailInstructions.innerHTML = '';
       detailInstructionsContainer.classList.add('hidden');
     }
+    if (recipe.tags && recipe.tags.length > 0) {
+      detailTags.innerHTML = recipe.tags.map(t => `<span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200">${t}</span>`).join('');
+    } else {
+      detailTags.innerHTML = '';
+    }
     if (recipe.url) {
       detailUrl.href = recipe.url;
-      detailUrlText.textContent = recipe.url;
-      detailUrlContainer.classList.remove('hidden');
+      detailUrl.title = recipe.url;
+      detailUrlText.textContent = getDomainFromUrl(recipe.url) || recipe.url;
+      detailUrl.classList.remove('hidden');
     } else {
-      detailUrlContainer.classList.add('hidden');
+      detailUrl.classList.add('hidden');
     }
     if (recipe.pdfPath) {
       detailPdfLink.href = recipe.pdfPath;
       detailPdfLink.download = (recipe.title || 'recipe').replace(/[^a-z0-9.-]/gi, '_') + '.pdf';
-      detailPdfContainer.classList.remove('hidden');
+      detailPdfLink.classList.remove('hidden');
     } else {
-      detailPdfContainer.classList.add('hidden');
+      detailPdfLink.classList.add('hidden');
     }
+    const hasMeta = (recipe.tags && recipe.tags.length > 0) || recipe.url || recipe.pdfPath;
+    if (detailMetaBar) detailMetaBar.classList.toggle('hidden', !hasMeta);
   };
 
   const openDetail = (recipe) => {
@@ -579,24 +594,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (recipe.screenshot) {
       detailImage.src = recipe.screenshot;
       detailImageContainer.classList.remove('hidden');
+      detailRecipePanel.classList.remove('pt-2');
+      detailRecipePanel.classList.add('pt-6');
     } else {
       detailImageContainer.classList.add('hidden');
-    }
-
-    if (recipe.url) {
-      detailUrl.href = recipe.url;
-      detailUrlText.textContent = recipe.url;
-      detailUrlContainer.classList.remove('hidden');
-    } else {
-      detailUrlContainer.classList.add('hidden');
-    }
-
-    if (recipe.pdfPath) {
-      detailPdfLink.href = recipe.pdfPath;
-      detailPdfLink.download = (recipe.title || 'recipe').replace(/[^a-z0-9.-]/gi, '_') + '.pdf';
-      detailPdfContainer.classList.remove('hidden');
-    } else {
-      detailPdfContainer.classList.add('hidden');
+      detailRecipePanel.classList.remove('pt-6');
+      detailRecipePanel.classList.add('pt-2');
     }
 
     if (recipe.rawText) {
@@ -1040,7 +1043,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
   if (addTagBtn && newTagInput) {
-    addTagBtn.addEventListener('click', async () => {
+    const addTag = async () => {
       const name = newTagInput.value.trim();
       if (!name) return;
       try {
@@ -1058,10 +1061,12 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (err) {
         console.error(err);
       }
-    });
+    };
+    addTagBtn.addEventListener('click', addTag);
+    newTagInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } });
   }
   if (addFoodTypeBtn && newFoodTypeInput) {
-    addFoodTypeBtn.addEventListener('click', async () => {
+    const addFoodType = async () => {
       const name = newFoodTypeInput.value.trim();
       if (!name) return;
       try {
@@ -1079,7 +1084,9 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (err) {
         console.error(err);
       }
-    });
+    };
+    addFoodTypeBtn.addEventListener('click', addFoodType);
+    newFoodTypeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addFoodType(); } });
   }
 
   if (openRestaurantModalBtn) {
