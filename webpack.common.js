@@ -8,7 +8,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     clean: true,
-    filename: 'js/[name].js',
+    filename: process.env.NODE_ENV === 'production' ? 'js/[name].[contenthash:8].js' : 'js/[name].js',
   },
   module: {
     rules: [
@@ -20,7 +20,7 @@ module.exports = {
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: 'css/[name].css',
+      filename: process.env.NODE_ENV === 'production' ? 'css/[name].[contenthash:8].css' : 'css/[name].css',
     }),
   ],
 };

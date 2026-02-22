@@ -373,11 +373,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const tagBadges = (item.tags || []).slice(0, 3).map((t) => `<span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-indigo-500/30 text-indigo-200">${t}</span>`).join(' ');
       const tagRow = tagBadges ? `<div class="flex items-center gap-2 flex-wrap mt-0.5">${tagBadges}</div>` : '';
       const title = isRecipe ? item.title : item.name;
-      const hasAction = isRecipe ? !!item.url : !!(item.orderingUrl && item.orderingUrl.trim());
+      const hasAction = isRecipe ? true : !!(item.orderingUrl && item.orderingUrl.trim());
       const actionLabel = isRecipe
-        ? (item.url ? 'View' : 'No link')
+        ? 'View'
         : (item.orderingUrl && item.orderingUrl.trim() ? 'Order' : 'Add link');
-      const actionBtn = `<span class="card-action-btn inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${hasAction ? 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30' : 'bg-slate-700/50 text-slate-500'}">${actionLabel}${hasAction ? linkIcon : ''}</span>`;
+      const showLinkIcon = isRecipe ? !!item.url : !!(item.orderingUrl && item.orderingUrl.trim());
+      const actionBtn = `<span class="card-action-btn inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${hasAction ? 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30' : 'bg-slate-700/50 text-slate-500'}">${actionLabel}${showLinkIcon ? linkIcon : ''}</span>`;
       const card = document.createElement('div');
       card.className = 'bg-slate-900 rounded-xl border border-slate-800 overflow-visible hover:border-slate-600 hover:shadow-md transition-all duration-200 cursor-pointer flex min-h-[104px] relative';
       card.innerHTML = `
