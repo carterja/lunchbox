@@ -108,6 +108,12 @@
     color: #7C3AED;
   }
 
+  /* Modals: cap width on small viewports so they fit in iPhone etc. */
+  .modal-inner {
+    max-width: min(100%, calc(100vw - 2rem));
+    min-width: 0;
+  }
+
   /* Logo wordmark – neon sign style */
   /* Settings modal: left nav item */
   .settings-nav-item {

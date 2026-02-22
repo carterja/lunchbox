@@ -334,11 +334,11 @@ document.addEventListener('DOMContentLoaded', () => {
       container.appendChild(pill);
     });
     const wrap = document.createElement('span');
-    wrap.className = 'inline-flex items-center gap-1';
+    wrap.className = 'flex flex-wrap items-center gap-1 min-w-0';
     const input = document.createElement('input');
     input.type = 'text';
     input.placeholder = 'Add tag';
-    input.className = 'tag-add-input input-dark w-20 px-2 py-0.5 rounded text-xs';
+    input.className = 'tag-add-input input-dark w-20 min-w-0 px-2 py-0.5 rounded text-xs';
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addNew(); } });
     const addBtn = document.createElement('button');
     addBtn.type = 'button';
