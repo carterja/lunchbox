@@ -1,4 +1,40 @@
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="256" height="256"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="256" height="256"><svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="1000"><style>
+    #light-icon {
+      display: inline;
+    }
+    #dark-icon {
+      display: none;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      #light-icon {
+        display: none;
+      }
+      #dark-icon {
+        display: inline;
+      }
+    }
+  </style><g id="light-icon"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="1000"><g clip-path="url(#SvgjsClipPath1103)"><rect width="1000" height="1000" fill="#000000"></rect><g transform="matrix(2.734375,0,0,2.734375,150,150)"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="256" height="256"><svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="neonGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7C3AED"></stop>
+      <stop offset="100%" stop-color="#06B6D4"></stop>
+    </linearGradient>
+    <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#7C3AED" flood-opacity="0.7"></feDropShadow>
+      <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#06B6D4" flood-opacity="0.7"></feDropShadow>
+    </filter>
+  <clipPath id="SvgjsClipPath1103"><rect width="1000" height="1000" x="0" y="0" rx="350" ry="350"></rect></clipPath></defs>
+
+  <!-- Lunchbox Base -->
+  <rect x="32" y="96" width="192" height="96" rx="20" fill="none" stroke="url(#neonGradient)" stroke-width="14" filter="url(#neonGlow)"></rect>
+
+  <!-- Lid -->
+  <rect x="56" y="56" width="144" height="64" rx="16" fill="none" stroke="url(#neonGradient)" stroke-width="14" filter="url(#neonGlow)"></rect>
+
+  <!-- Smile Curve -->
+  <path d="M72 144 Q128 176 184 144" stroke="url(#neonGradient)" stroke-width="7" fill="none" stroke-linecap="round" filter="url(#neonGlow)"></path>
+</svg></svg></g></g></svg></g><g id="dark-icon"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="1000"><g><g transform="matrix(3.90625,0,0,3.90625,0,0)"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="256" height="256"><svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="neonGradient" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#7C3AED"></stop>
@@ -18,6 +54,4 @@
 
   <!-- Smile Curve -->
   <path d="M72 144 Q128 176 184 144" stroke="url(#neonGradient)" stroke-width="7" fill="none" stroke-linecap="round" filter="url(#neonGlow)"></path>
-</svg></svg><style>@media (prefers-color-scheme: light) { :root { filter: none; } }
-@media (prefers-color-scheme: dark) { :root { filter: none; } }
-</style></svg>
+</svg></svg></g></g></svg></g></svg>
