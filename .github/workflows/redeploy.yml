@@ -1,0 +1,22 @@
+name: Redeploy on main push
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  redeploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Portainer webhook
+        run: |
+          echo "Calling webhook..."
+          response=$(curl -s -w "\n%{http_code}" --max-time 30 -X POST "${{ secrets.PORTAINER_WEBHOOK_URL }}" 2>&1)
+          echo "$response"
+          http_code=$(echo "$response" | tail -n1)
+          if [ "$http_code" = "200" ] || [ "$http_code" = "204" ]; then
+            echo "Webhook triggered successfully (HTTP $http_code)"
+          else
+            echo "Webhook returned HTTP $http_code"
+            exit 1
+          fi

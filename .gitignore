@@ -6,3 +6,4 @@ dist
 .cache
 server/uploads
 server/data
+.DS_Store

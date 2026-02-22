@@ -4,42 +4,45 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Lunch Box - Your Recipe Collection</title>
+  <title>LunchBox</title>
   <meta name="description" content="">
 
-  <meta property="og:title" content="Lunch Box">
+  <meta property="og:title" content="LunchBox">
   <meta property="og:type" content="">
   <meta property="og:url" content="">
   <meta property="og:image" content="">
   <meta property="og:image:alt" content="">
 
-  <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="apple-touch-icon" href="/icon.svg">
 
   <link rel="manifest" href="site.webmanifest">
-  <meta name="theme-color" content="#0f1216">
+  <meta name="theme-color" content="#0B1220">
+  <!-- LunchBox -->
 </head>
 
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen">
+<body class="bg-page text-text-primary font-sans min-h-screen" style="background-color: #0B1220; color: #FFFFFF;">
 
-  <header class="bg-indigo-900 text-white shadow-md">
-    <div class="container mx-auto px-4 py-4 max-w-6xl flex justify-between items-center">
-      <h1 class="text-2xl font-bold tracking-tight">Lunch Box</h1>
-      <button id="open-settings-btn" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-indigo-800 transition-colors" title="Manage food types">
+  <header class="bg-page border-b border-white/5" style="background-color: #0B1220; border-bottom: 1px solid rgba(255,255,255,0.06);">
+    <div class="container mx-auto px-4 py-3 max-w-6xl flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <img src="/logo.svg" alt="" class="h-9 flex-shrink-0" aria-hidden="true">
+        <h1 class="logo-text text-xl font-bold tracking-wide">LunchBox</h1>
+      </div>
+      <button id="open-settings-btn" class="p-2 rounded-lg transition-colors text-text-secondary hover:text-white hover:bg-white/5" title="Manage food types">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
       </button>
     </div>
   </header>
 
-  <main class="container mx-auto px-4 py-8 max-w-6xl">
+  <main class="container mx-auto px-4 py-10 max-w-6xl">
     <!-- Modal -->
     <div id="recipe-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
-      <div class="bg-slate-900 rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] border border-slate-800">
+      <div class="rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] border border-white/5" style="background-color: #111827;">
         <!-- Modal Header -->
-        <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center">
-          <h2 id="recipe-modal-title" class="text-xl font-bold text-slate-100">Add New Recipe</h2>
-          <button id="close-modal-btn" class="text-slate-400 hover:text-slate-200 transition-colors">
+        <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center" style="border-bottom-color: rgba(255,255,255,0.06);">
+          <h2 id="recipe-modal-title" class="text-xl font-bold text-white">Add New Recipe</h2>
+          <button id="close-modal-btn" class="text-text-muted hover:text-white transition-colors">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
         </div>
@@ -47,11 +50,11 @@
         <!-- Modal Body (Step 1: Choose Source) -->
         <div id="modal-step-1" class="p-6 overflow-y-auto">
           <!-- Tabs -->
-          <div class="flex border-b border-slate-800 mb-6">
-            <button id="tab-url-btn" class="px-4 py-2 border-b-2 border-indigo-400 text-indigo-200 font-semibold text-sm transition-colors">
+          <div class="flex border-b border-white/5 mb-6" style="border-color: rgba(255,255,255,0.06);">
+            <button id="tab-url-btn" class="px-4 py-2 border-b-2 font-semibold text-sm transition-colors active-gradient border-transparent -mb-px">
               From URL
             </button>
-            <button id="tab-upload-btn" class="px-4 py-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-semibold text-sm transition-colors">
+            <button id="tab-upload-btn" class="px-4 py-2 border-b-2 border-transparent text-text-muted hover:text-white font-semibold text-sm transition-colors -mb-px">
               Image Upload
             </button>
           </div>
@@ -59,11 +62,11 @@
           <!-- URL Tab Content -->
           <div id="tab-url-content" class="space-y-4">
             <div class="space-y-2">
-              <label for="url-input" class="block text-sm font-medium text-slate-300">Recipe URL</label>
+              <label for="url-input" class="block text-sm font-medium text-text-secondary">Recipe URL</label>
               <input type="text" id="url-input" placeholder="https://example.com/recipe"
-                     class="w-full p-3 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-950 text-slate-100">
+                     class="input-dark w-full p-3">
             </div>
-            <button id="preview-url-btn" class="w-full bg-indigo-500 hover:bg-indigo-400 text-white py-3 rounded-xl font-bold transition duration-200 shadow-md disabled:opacity-50">
+            <button id="preview-url-btn" class="btn-primary w-full py-3 rounded-xl disabled:opacity-50">
               Process URL
             </button>
           </div>
@@ -71,63 +74,72 @@
           <!-- Upload Tab Content -->
           <div id="tab-upload-content" class="hidden space-y-4">
             <div class="space-y-2">
-              <label for="screenshot-input" class="block text-sm font-medium text-slate-300">Screenshot / Image</label>
-              <div class="border-2 border-dashed border-slate-700 rounded-xl p-8 text-center hover:border-indigo-400 transition-colors cursor-pointer group" onclick="document.getElementById('screenshot-input').click()">
-                <input type="file" id="screenshot-input" accept="image/*" class="hidden">
-                <svg class="w-12 h-12 mx-auto text-slate-400 group-hover:text-indigo-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                <p class="mt-2 text-sm text-slate-400" id="file-name-display">Click to select, drag and drop, or paste image</p>
+              <label for="screenshot-input" class="block text-sm font-medium text-text-secondary">Image or PDF</label>
+              <div class="border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer group hover:border-violet-500/50" style="border-color: rgba(255,255,255,0.1);" onclick="document.getElementById('screenshot-input').click()">
+                <input type="file" id="screenshot-input" accept="image/*,application/pdf" class="hidden">
+                <svg class="w-12 h-12 mx-auto text-text-muted group-hover:text-cyan-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <p class="mt-2 text-sm text-text-muted" id="file-name-display">Click to select, drag and drop, or paste image/PDF</p>
               </div>
             </div>
-            <button id="preview-upload-btn" class="w-full bg-indigo-500 hover:bg-indigo-400 text-white py-3 rounded-xl font-bold transition duration-200 shadow-md disabled:opacity-50">
-              Process Image (OCR)
+            <button id="preview-upload-btn" class="btn-primary w-full py-3 rounded-xl disabled:opacity-50">
+              Process Image / PDF
             </button>
           </div>
         </div>
 
         <!-- Modal Body (Step 2: Preview & Edit) -->
         <div id="modal-step-2" class="hidden p-6 overflow-y-auto">
-          <h3 class="text-lg font-semibold text-slate-100 mb-4">Preview & Edit</h3>
+          <h3 class="text-lg font-semibold text-white mb-4">Preview & Edit</h3>
           <div class="space-y-4">
             <div class="space-y-2">
-              <label for="edit-title" class="block text-sm font-medium text-slate-300">Title</label>
-              <input type="text" id="edit-title" class="w-full p-3 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-950 text-slate-100">
+              <label for="edit-title" class="block text-sm font-medium text-text-secondary">Title</label>
+              <input type="text" id="edit-title" class="input-dark w-full p-3">
             </div>
             <div class="space-y-2">
-              <label for="edit-type" class="block text-sm font-medium text-slate-300">Type</label>
-              <select id="edit-type" class="w-full p-3 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-950 text-slate-100">
+              <label for="edit-type" class="block text-sm font-medium text-text-secondary">Type</label>
+              <select id="edit-type" class="input-dark w-full p-3">
                 <option value="General">General</option>
-                <option value="Scanned">Scanned</option>
+                <option value="Scanned">Import</option>
               </select>
             </div>
             <div class="space-y-2">
-              <label for="edit-food-type" class="block text-sm font-medium text-slate-300">Food type</label>
-              <select id="edit-food-type" class="w-full p-3 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-950 text-slate-100">
+              <label for="edit-food-type" class="block text-sm font-medium text-text-secondary">Food type</label>
+              <select id="edit-food-type" class="input-dark w-full p-3">
                 <option value="">— None —</option>
                 <!-- Populated by JS -->
               </select>
             </div>
             <div class="space-y-2">
-              <label for="edit-ingredients" class="block text-sm font-medium text-slate-300">Ingredients (one per line)</label>
-              <textarea id="edit-ingredients" rows="5" class="w-full p-3 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-950 text-slate-100" placeholder="One ingredient per line..."></textarea>
+              <div class="flex items-center justify-between gap-3">
+                <label class="text-sm font-medium text-text-secondary">Tags</label>
+                <div id="edit-tags-add" class="flex items-center gap-1"></div>
+              </div>
+              <div id="edit-tags-container" class="flex flex-wrap gap-2 p-2 min-h-[2.5rem] rounded-xl border border-white/5" style="background-color: #0B1220;">
+                <!-- Tag pills populated by JS -->
+              </div>
+            </div>
+            <div class="space-y-2">
+              <label for="edit-ingredients" class="block text-sm font-medium text-text-secondary">Ingredients (one per line)</label>
+              <textarea id="edit-ingredients" rows="5" class="input-dark w-full p-3 text-sm" placeholder="One ingredient per line..."></textarea>
             </div>
             <div id="preview-image-container" class="hidden space-y-2">
-              <label class="block text-sm font-medium text-slate-300">Image Preview</label>
-              <img id="preview-image" src="" class="max-h-48 rounded-lg mx-auto object-contain border border-slate-700">
+              <label class="block text-sm font-medium text-text-secondary">Image Preview</label>
+              <img id="preview-image" src="" class="max-h-48 rounded-lg mx-auto object-contain border border-white/10">
             </div>
             <div id="preview-text-container" class="hidden space-y-2">
-              <label for="edit-text" class="block text-sm font-medium text-slate-300">Extracted Text</label>
-              <textarea id="edit-text" rows="4" class="w-full p-3 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-mono text-sm bg-slate-950 text-slate-100"></textarea>
+              <label for="edit-text" class="block text-sm font-medium text-text-secondary">Extracted Text</label>
+              <textarea id="edit-text" rows="4" class="input-dark w-full p-3 font-mono text-sm"></textarea>
             </div>
             <div id="preview-instructions-container" class="hidden space-y-2">
-              <label for="edit-instructions" class="block text-sm font-medium text-slate-300">Instructions (one per line)</label>
-              <textarea id="edit-instructions" rows="6" class="w-full p-3 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm bg-slate-950 text-slate-100" placeholder="Step 1...&#10;Step 2..."></textarea>
+              <label for="edit-instructions" class="block text-sm font-medium text-text-secondary">Instructions (one per line)</label>
+              <textarea id="edit-instructions" rows="6" class="input-dark w-full p-3 text-sm" placeholder="Step 1...&#10;Step 2..."></textarea>
             </div>
           </div>
           <div class="flex gap-3 mt-8">
-            <button id="back-to-step-1" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-100 py-3 rounded-xl font-bold transition duration-200">
+            <button id="back-to-step-1" class="btn-secondary flex-1 py-3 rounded-xl">
               Back
             </button>
-            <button id="save-recipe-btn" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-white py-3 rounded-xl font-bold transition duration-200 shadow-md">
+            <button id="save-recipe-btn" class="btn-primary flex-1 py-3 rounded-xl">
               Save Recipe
             </button>
           </div>
@@ -135,96 +147,121 @@
       </div>
     </div>
 
-    <section class="py-6">
-      <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-        <div class="flex items-center gap-2">
-          <button id="open-modal-btn" class="bg-slate-800 hover:bg-slate-700 text-indigo-200 px-3 py-2 rounded-lg font-semibold text-sm transition-colors flex items-center gap-1.5 border border-slate-600">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            Add Recipe
-          </button>
-          <button id="open-restaurant-modal-btn" class="bg-slate-800 hover:bg-slate-700 text-indigo-200 px-3 py-2 rounded-lg font-semibold text-sm transition-colors flex items-center gap-1.5 border border-slate-600">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            Add To-Go
-          </button>
-        </div>
+    <section id="lunch-section" class="space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div class="flex flex-wrap items-center gap-2">
-          <label for="card-filter" class="text-sm font-medium sr-only">Show</label>
-          <select id="card-filter" class="bg-slate-800 text-slate-200 text-sm rounded-lg px-3 py-2 border border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500">
+          <label for="card-filter" class="sr-only">Show</label>
+          <select id="card-filter" class="filter-pill">
             <option value="all">All</option>
             <option value="recipes">Recipes</option>
             <option value="restaurants">To-Go</option>
           </select>
-          <label for="food-type-filter" class="text-sm font-medium sr-only">Food type</label>
-          <select id="food-type-filter" class="bg-slate-800 text-slate-200 text-sm rounded-lg px-3 py-2 border border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500">
+          <label for="food-type-filter" class="sr-only">Food type</label>
+          <select id="food-type-filter" class="filter-pill">
             <option value="">All food types</option>
             <!-- Populated by JS from /api/food-types -->
           </select>
-          <select id="type-filter" class="bg-slate-800 text-slate-200 text-sm rounded-lg px-3 py-2 border border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 hidden">
+          <select id="type-filter" class="filter-pill hidden">
             <option value="all">All Types</option>
             <option value="General">General</option>
-            <option value="Scanned">Scanned</option>
+            <option value="Scanned">Import</option>
+          </select>
+          <label for="tag-filter" class="sr-only">Tag</label>
+          <select id="tag-filter" class="filter-pill">
+            <option value="">All tags</option>
+            <!-- Populated by JS -->
           </select>
         </div>
+        <div class="flex items-center gap-2">
+          <button id="open-modal-btn" class="btn-secondary px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Recipe
+          </button>
+          <button id="open-restaurant-modal-btn" class="btn-secondary px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            To-Go
+          </button>
+        </div>
       </div>
-      <div id="card-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        <!-- Recipes and To-Go cards -->
+      <!-- Fetch error banner (shown when API load fails) -->
+      <div id="fetch-error-banner" class="hidden mb-4 p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 flex items-center justify-between gap-3 flex-wrap">
+        <p class="text-sm text-amber-200">Couldn&apos;t load some data. Check your connection and try again.</p>
+        <button type="button" id="fetch-retry-btn" class="btn-secondary py-1.5 px-3 text-sm">Retry</button>
+      </div>
+      <!-- App icon row (visible in app icon view only) -->
+      <div id="togo-app-icons-wrap" class="hidden mb-6">
+        <div id="togo-app-icons-row" class="flex flex-wrap gap-4">
+          <!-- App icons rendered by JS -->
+        </div>
+      </div>
+      <div id="card-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 pt-4">
+        <!-- Recipes and To-Go cards (To-Go hidden in app icon view) -->
       </div>
     </section>
 
     <!-- Recipe Detail Modal -->
     <div id="detail-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
-      <div class="bg-slate-900 rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh] border border-slate-800">
+      <div class="rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh] border border-white/5" style="background-color: #111827;">
         <!-- Modal Header -->
-        <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-indigo-900 text-white">
-          <h2 id="detail-title" class="text-xl font-bold">Recipe Title</h2>
-          <button id="close-detail-btn" class="text-white hover:text-indigo-100 transition-colors">
+        <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center" style="border-bottom-color: rgba(255,255,255,0.06);">
+          <h2 id="detail-title" class="text-xl font-bold text-white">Recipe Title</h2>
+          <button id="close-detail-btn" class="text-text-muted hover:text-white transition-colors">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
         </div>
 
         <!-- Tabbed content: Recipe (formatted) + Edit -->
         <div id="detail-tabbed-content" class="flex flex-col flex-1 min-h-0">
-          <div class="flex border-b border-slate-800 bg-slate-800/30">
-            <button type="button" id="detail-tab-recipe" data-tab="recipe" class="detail-tab px-6 py-3 text-sm font-semibold border-b-2 border-indigo-500 text-white transition-colors">
+          <div class="flex items-center border-b border-white/5 bg-elevated/50" style="border-color: rgba(255,255,255,0.06);">
+            <button type="button" id="detail-tab-recipe" data-tab="recipe" class="detail-tab px-6 py-3 text-sm font-semibold border-b-2 text-white transition-colors border-cyan-400">
               Recipe
             </button>
-            <button type="button" id="detail-tab-edit" data-tab="edit" class="detail-tab px-6 py-3 text-sm font-semibold text-slate-400 border-b-2 border-transparent hover:text-white hover:border-slate-500 transition-colors">
+            <button type="button" id="detail-tab-edit" data-tab="edit" class="detail-tab px-6 py-3 text-sm font-semibold text-text-muted border-b-2 border-transparent hover:text-white hover:border-white/30 transition-colors">
               Edit
+            </button>
+            <button type="button" id="detail-trash-btn" class="ml-auto p-2 mr-2 text-text-muted hover:text-red-400 transition-colors" title="Delete">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
             </button>
           </div>
 
           <!-- Recipe panel: formatted read-only -->
-          <div id="detail-recipe-panel" class="p-6 overflow-y-auto space-y-6 flex-1">
+          <div id="detail-recipe-panel" class="px-6 pb-6 pt-6 overflow-y-auto space-y-6 flex-1">
             <div id="detail-image-container" class="hidden">
-              <img id="detail-image" src="" class="w-full max-h-96 object-contain rounded-xl border border-slate-700">
+              <img id="detail-image" src="" class="w-full max-h-96 object-contain rounded-xl border border-white/10">
             </div>
 
-            <div id="detail-url-container" class="hidden text-sm">
-              <h3 class="font-semibold text-slate-400 uppercase tracking-wider mb-1">Source URL</h3>
-              <a id="detail-url" href="#" target="_blank" class="text-indigo-400 hover:text-indigo-300 break-all flex items-center">
-                <span id="detail-url-text"></span>
-                <svg class="w-4 h-4 ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-              </a>
+            <div id="detail-meta-bar" class="flex flex-wrap items-center gap-2 text-sm">
+              <div id="detail-tags" class="flex flex-wrap gap-1.5"></div>
+              <div id="detail-meta-links" class="flex flex-wrap items-center gap-2 text-text-secondary">
+                <a id="detail-url" href="#" target="_blank" rel="noopener noreferrer" class="hidden text-accent hover:opacity-90 inline-flex items-center gap-1" title="">
+                  <span id="detail-url-text"></span>
+                  <svg class="w-3.5 h-3.5 flex-shrink-0 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                </a>
+                <a id="detail-pdf-link" href="#" download class="hidden text-accent hover:opacity-90 inline-flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                  <span>PDF</span>
+                </a>
+              </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div id="detail-ingredients-container" class="space-y-2">
-                <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Ingredients</h3>
-                <div id="detail-ingredients" class="space-y-1 text-slate-200 text-sm">
+                <h3 class="text-sm font-semibold text-text-muted uppercase tracking-wider">Ingredients</h3>
+                <div id="detail-ingredients" class="space-y-1 text-text-secondary text-sm">
                   <!-- Populated by JS -->
                 </div>
               </div>
               <div id="detail-instructions-container" class="space-y-2">
-                <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Instructions</h3>
-                <div id="detail-instructions" class="space-y-3 text-slate-200 text-sm">
+                <h3 class="text-sm font-semibold text-text-muted uppercase tracking-wider">Instructions</h3>
+                <div id="detail-instructions" class="space-y-3 text-text-secondary text-sm">
                   <!-- Populated by JS -->
                 </div>
               </div>
             </div>
 
             <div id="detail-raw-text-container" class="hidden">
-              <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-2">Extracted Text</h3>
-              <div id="detail-raw-text" class="bg-slate-950 p-4 rounded-xl text-sm font-mono text-slate-300 whitespace-pre-wrap border border-slate-700">
+              <h3 class="text-sm font-semibold text-text-muted uppercase tracking-wider mb-2">Extracted Text</h3>
+              <div id="detail-raw-text" class="p-4 rounded-xl text-sm font-mono text-text-secondary whitespace-pre-wrap border border-white/10" style="background-color: #0B1220;">
               </div>
             </div>
           </div>
@@ -232,30 +269,71 @@
           <!-- Edit panel: form -->
           <div id="detail-edit-panel" class="hidden p-6 overflow-y-auto space-y-4 flex-1">
             <div class="space-y-2">
-              <label for="inline-edit-title" class="block text-xs font-semibold text-slate-400 uppercase">Title</label>
-              <input type="text" id="inline-edit-title" class="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-100" placeholder="Recipe title">
+              <label for="inline-edit-title" class="block text-xs font-semibold text-text-muted uppercase">Title</label>
+              <input type="text" id="inline-edit-title" class="input-dark w-full p-3" placeholder="Recipe title">
             </div>
             <div id="inline-edit-url-row" class="space-y-2">
-              <label for="inline-edit-url" class="block text-xs font-semibold text-slate-400 uppercase">Source URL</label>
+              <label for="inline-edit-url" class="block text-xs font-semibold text-text-muted uppercase">Source URL</label>
               <div class="flex gap-2">
-                <input type="url" id="inline-edit-url" class="flex-1 p-3 bg-slate-950 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-100 text-sm" placeholder="https://...">
-                <button type="button" id="refresh-from-url-btn" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl font-semibold text-sm transition-colors whitespace-nowrap" title="Re-fetch ingredients and steps from URL">Refresh</button>
+                <input type="url" id="inline-edit-url" class="input-dark flex-1 p-3 text-sm" placeholder="https://...">
+                <button type="button" id="refresh-from-url-btn" class="btn-secondary p-2 rounded-xl" title="Re-fetch ingredients and steps from URL">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </button>
               </div>
             </div>
             <div class="space-y-2">
-              <label for="inline-edit-food-type" class="block text-xs font-semibold text-slate-400 uppercase">Food type</label>
-              <select id="inline-edit-food-type" class="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-100 text-sm">
+              <label class="block text-xs font-semibold text-text-muted uppercase">Image</label>
+              <div id="inline-edit-image-wrap" class="flex flex-col gap-2">
+                <input type="file" id="inline-edit-image-input" accept="image/*" class="hidden">
+                <div id="inline-edit-image-preview-wrap" class="hidden">
+                  <img id="inline-edit-image-preview" src="" alt="" class="max-h-40 rounded-lg border border-white/10 object-contain bg-elevated">
+                  <div class="flex gap-2 mt-2">
+                    <label for="inline-edit-image-input" class="btn-secondary cursor-pointer px-3 py-1.5 rounded-lg text-sm font-medium inline-block">Change image</label>
+                    <button type="button" id="inline-edit-image-remove-btn" class="btn-secondary px-3 py-1.5 rounded-lg text-sm font-medium">Remove image</button>
+                  </div>
+                </div>
+                <div id="inline-edit-image-empty-wrap" class="hidden">
+                  <label for="inline-edit-image-input" class="cursor-pointer inline-flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-dashed border-white/10 hover:border-violet-500/50 text-text-muted hover:text-cyan-400 text-sm font-medium transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    Add image
+                  </label>
+                </div>
+                <div class="flex gap-2 items-center pt-1 border-t border-white/5 mt-2 pt-2">
+                  <span class="text-xs text-text-muted whitespace-nowrap">Or image URL:</span>
+                  <input type="url" id="inline-edit-image-url" placeholder="https://..." class="input-dark flex-1 min-w-0 p-2 text-sm">
+                  <button type="button" id="inline-edit-image-url-btn" class="btn-secondary px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap">Use URL</button>
+                </div>
+                <div class="flex gap-2 items-center pt-1 border-t border-white/5 mt-2 pt-2">
+                  <button type="button" id="recipe-fetch-images-btn" class="text-xs font-medium text-accent hover:opacity-90 transition-colors">Fetch images from recipe URL</button>
+                </div>
+                <div id="recipe-image-picker" class="hidden flex flex-wrap gap-2 p-2 min-h-[4rem] rounded-xl mt-1 border border-white/5" style="background-color: #0B1220;">
+                  <!-- Thumbnails from recipe URL; one selected = screenshot -->
+                </div>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <label for="inline-edit-food-type" class="block text-xs font-semibold text-text-muted uppercase">Food type</label>
+              <select id="inline-edit-food-type" class="input-dark w-full p-3 text-sm">
                 <option value="">— None —</option>
               </select>
             </div>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between gap-3">
+                <label class="text-xs font-semibold text-text-muted uppercase">Tags</label>
+                <div id="inline-edit-tags-add" class="flex items-center gap-1"></div>
+              </div>
+              <div id="inline-edit-tags-container" class="flex flex-wrap gap-2 p-2 min-h-[2.5rem] rounded-xl border border-white/5" style="background-color: #0B1220;">
+                <!-- Tag pills populated by JS -->
+              </div>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="space-y-2">
-                <label for="inline-edit-ingredients" class="block text-xs font-semibold text-slate-400 uppercase">Ingredients (one per line)</label>
-                <textarea id="inline-edit-ingredients" rows="12" class="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-100 text-sm placeholder-slate-500" placeholder="One ingredient per line..."></textarea>
+                <label for="inline-edit-ingredients" class="block text-xs font-semibold text-text-muted uppercase">Ingredients (one per line)</label>
+                <textarea id="inline-edit-ingredients" rows="12" class="input-dark w-full p-3 text-sm" placeholder="One ingredient per line..."></textarea>
               </div>
               <div class="space-y-2">
-                <label for="inline-edit-instructions" class="block text-xs font-semibold text-slate-400 uppercase">Instructions (one per line)</label>
-                <textarea id="inline-edit-instructions" rows="12" class="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-100 text-sm placeholder-slate-500" placeholder="One step per line..."></textarea>
+                <label for="inline-edit-instructions" class="block text-xs font-semibold text-text-muted uppercase">Instructions (one per line)</label>
+                <textarea id="inline-edit-instructions" rows="12" class="input-dark w-full p-3 text-sm" placeholder="One step per line..."></textarea>
               </div>
             </div>
           </div>
@@ -270,42 +348,61 @@
               Delete Recipe Permanently
             </button>
           </div>
-          <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4 text-sm text-slate-400">
+          <div class="rounded-xl p-4 text-sm text-text-muted border border-white/10 bg-elevated/50">
             <p>Recipe ID: <span id="manage-recipe-id" class="font-mono"></span></p>
             <p>Type: <span id="manage-recipe-type"></span></p>
           </div>
         </div>
 
         <!-- Modal Footer -->
-        <div class="px-6 py-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-slate-900/50">
+        <div class="px-6 py-4 border-t border-white/5 flex flex-wrap items-center justify-between gap-3 bg-elevated/30" style="border-color: rgba(255,255,255,0.06);">
           <div class="flex flex-wrap items-center gap-3">
-            <div id="view-footer-actions" class="flex gap-3">
-              <button id="inline-edit-btn" class="text-indigo-400 hover:text-indigo-300 font-semibold px-2 py-1 transition-colors">
-                Edit
-              </button>
-              <button id="inline-manage-btn" class="text-slate-400 hover:text-slate-300 font-semibold px-2 py-1 transition-colors">
-                Manage
+            <div id="view-footer-actions" class="flex gap-3 items-center">
+              <button id="grocery-list-btn" class="text-accent hover:opacity-90 font-semibold px-2 py-1 transition-colors" title="Generate grocery list">
+                Grocery list
               </button>
             </div>
-            <div id="edit-footer-actions" class="hidden flex gap-3">
-              <button id="inline-save-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-lg font-bold transition duration-200 shadow-md">
-                Save Changes
-              </button>
-              <button id="inline-cancel-btn" class="text-slate-400 hover:text-slate-300 font-semibold px-4 py-2 transition-colors">
-                Cancel
-              </button>
-              <button id="inline-manage-btn-edit" class="text-slate-400 hover:text-slate-300 font-semibold px-2 py-1 transition-colors">
-                Manage
+            <div id="edit-footer-actions" class="hidden flex gap-3 items-center">
+              <button id="inline-save-btn" class="btn-primary px-6 py-2 rounded-lg">
+                Save
               </button>
             </div>
             <div id="manage-footer-actions" class="hidden">
-              <button id="inline-back-btn" class="text-indigo-400 hover:text-indigo-300 font-semibold px-4 py-2 transition-colors">
+              <button id="inline-back-btn" class="text-accent hover:opacity-90 font-semibold px-4 py-2 transition-colors">
                 Back to Recipe
               </button>
             </div>
           </div>
-          <button id="close-detail-footer-btn" class="bg-slate-800 hover:bg-slate-700 text-slate-100 px-6 py-2 rounded-lg font-bold transition duration-200">
+          <button id="close-detail-footer-btn" class="btn-secondary px-6 py-2 rounded-lg">
             Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grocery List Modal -->
+    <div id="grocery-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+      <div class="rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh] border border-white/5" style="background-color: #111827;">
+        <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center" style="border-bottom-color: rgba(255,255,255,0.06);">
+          <h2 id="grocery-modal-title" class="text-xl font-bold text-white">Grocery List</h2>
+          <button id="close-grocery-modal-btn" class="text-text-muted hover:text-white transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+        <div class="px-6 py-4 border-b border-white/5 text-sm text-text-secondary" style="border-color: rgba(255,255,255,0.06);">
+          <p>Uncheck items you don&apos;t need. Common pantry items are unchecked by default.</p>
+        </div>
+        <div id="grocery-list-items" class="px-6 py-4 overflow-y-auto flex-1 space-y-2">
+          <!-- Checkbox list populated by JS -->
+        </div>
+        <div class="px-6 py-4 border-t border-white/5 flex flex-wrap justify-end gap-3 bg-elevated/30" style="border-color: rgba(255,255,255,0.06);">
+          <button id="grocery-copy-btn" class="btn-secondary px-6 py-2 rounded-lg flex items-center gap-2" title="Copy to clipboard">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+            Copy
+          </button>
+          <button id="grocery-shortcut-btn" class="btn-primary px-6 py-2 rounded-lg flex items-center gap-2" title="Add to Apple Notes">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+            Add to Notes
           </button>
         </div>
       </div>
@@ -313,45 +410,69 @@
 
     <!-- Restaurant modal (Add / Edit) -->
     <div id="restaurant-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
-      <div class="bg-slate-900 rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-800">
-        <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-800/50">
-          <h2 id="restaurant-modal-title" class="text-xl font-bold text-slate-100">Add Restaurant</h2>
-          <button id="close-restaurant-modal-btn" class="text-slate-400 hover:text-slate-200 transition-colors">
+      <div class="rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-white/5" style="background-color: #111827;">
+        <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center bg-elevated/50" style="border-color: rgba(255,255,255,0.06);">
+          <h2 id="restaurant-modal-title" class="text-xl font-bold text-white">Add Restaurant</h2>
+          <button id="close-restaurant-modal-btn" class="text-text-muted hover:text-white transition-colors">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
         </div>
         <div class="p-6 space-y-4">
           <div class="space-y-2">
-            <label for="restaurant-name" class="block text-sm font-medium text-slate-300">Restaurant name</label>
-            <input type="text" id="restaurant-name" required placeholder="e.g. Joe's Pizza" class="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-100">
+            <label for="restaurant-name" class="block text-sm font-medium text-text-secondary">Restaurant name</label>
+            <input type="text" id="restaurant-name" required placeholder="e.g. Joe's Pizza" class="input-dark w-full p-3">
           </div>
           <div class="space-y-2">
-            <label for="restaurant-food-type" class="block text-sm font-medium text-slate-300">Food type</label>
-            <select id="restaurant-food-type" class="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-100">
+            <label for="restaurant-main-url" class="block text-sm font-medium text-text-secondary">Main site (optional)</label>
+            <input type="url" id="restaurant-main-url" placeholder="https://..." class="input-dark w-full p-3">
+            <p class="text-xs text-text-muted">Used for favicon/icon and to fetch images for the app icon.</p>
+          </div>
+          <div class="space-y-2">
+            <label for="restaurant-ordering-url" class="block text-sm font-medium text-text-secondary">Ordering link (optional)</label>
+            <div class="flex gap-2">
+              <input type="url" id="restaurant-ordering-url" placeholder="https://..." class="input-dark flex-1 p-3">
+              <button type="button" id="restaurant-search-link-btn" class="btn-secondary flex-shrink-0 px-3 py-2 text-sm font-medium rounded-xl whitespace-nowrap" title="Search for ordering link">
+                Find link
+              </button>
+            </div>
+            <p class="text-xs text-text-muted">Paste the link here, or use “Find link” to search and then paste the URL from the results.</p>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <label class="text-sm font-medium text-text-secondary">App icon</label>
+              <button type="button" id="restaurant-fetch-icons-btn" class="text-xs font-medium text-accent hover:opacity-90 transition-colors">Fetch images from site</button>
+            </div>
+            <div id="restaurant-icon-picker" class="hidden flex flex-wrap gap-2 p-2 min-h-[4rem] rounded-xl border border-white/5" style="background-color: #0B1220;">
+              <!-- Thumbnails from site; one selected = icon_url -->
+            </div>
+            <p id="restaurant-icon-picker-hint" class="text-xs text-text-muted">Enter main site above, then click "Fetch images from site" to pick an icon.</p>
+          </div>
+          <div class="space-y-2">
+            <label for="restaurant-food-type" class="block text-sm font-medium text-text-secondary">Food type</label>
+            <select id="restaurant-food-type" class="input-dark w-full p-3">
               <option value="">— None —</option>
               <!-- Populated by JS -->
             </select>
           </div>
           <div class="space-y-2">
-            <label for="restaurant-ordering-url" class="block text-sm font-medium text-slate-300">Ordering link (optional)</label>
-            <div class="flex gap-2">
-              <input type="url" id="restaurant-ordering-url" placeholder="https://..." class="flex-1 p-3 bg-slate-950 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-100">
-              <button type="button" id="restaurant-search-link-btn" class="flex-shrink-0 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm font-medium rounded-xl transition-colors whitespace-nowrap" title="Search for ordering link">
-                Find link
-              </button>
+            <div class="flex items-center justify-between gap-3">
+              <label class="text-sm font-medium text-text-secondary">Tags</label>
+              <div id="restaurant-tags-add" class="flex items-center gap-1"></div>
             </div>
-            <p class="text-xs text-slate-500">Paste the link here, or use “Find link” to search and then paste the URL from the results.</p>
+            <div id="restaurant-tags-container" class="flex flex-wrap gap-2 p-2 min-h-[2.5rem] rounded-xl border border-white/5" style="background-color: #0B1220;">
+              <!-- Tag pills populated by JS -->
+            </div>
           </div>
         </div>
-        <div class="px-6 py-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-slate-900/50">
+        <div class="px-6 py-4 border-t border-white/5 flex flex-wrap items-center justify-between gap-3 bg-elevated/30" style="border-color: rgba(255,255,255,0.06);">
           <div class="flex gap-3">
             <button id="restaurant-delete-btn" class="hidden text-red-400 hover:text-red-300 font-semibold px-2 py-1 transition-colors">
               Delete
             </button>
           </div>
           <div class="flex gap-3">
-            <button id="restaurant-cancel-btn" class="text-slate-400 hover:text-slate-300 font-semibold px-4 py-2 transition-colors">Cancel</button>
-            <button id="restaurant-save-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-lg font-bold transition duration-200">
+            <button id="restaurant-cancel-btn" class="text-text-muted hover:text-white font-semibold px-4 py-2 transition-colors">Cancel</button>
+            <button id="restaurant-save-btn" class="btn-primary px-6 py-2 rounded-lg">
               Save
             </button>
           </div>
@@ -359,24 +480,61 @@
       </div>
     </div>
 
-    <!-- Settings modal: manage food types -->
+    <!-- Settings modal: sidebar + content -->
     <div id="settings-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
-      <div class="bg-slate-900 rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-800">
-        <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-800/50">
-          <h2 class="text-xl font-bold text-slate-100">Manage food types</h2>
-          <button id="close-settings-btn" class="text-slate-400 hover:text-slate-200 transition-colors">
+      <div class="rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-white/5 flex flex-col max-h-[85vh]" style="background-color: #111827;">
+        <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center flex-shrink-0" style="border-color: rgba(255,255,255,0.06);">
+          <h2 class="text-xl font-bold text-white">Settings</h2>
+          <button id="close-settings-btn" class="text-text-muted hover:text-white transition-colors">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
         </div>
-        <div class="p-6 space-y-4">
-          <p class="text-sm text-slate-400">Food types are used for recipes and to-go. Add or remove types below.</p>
-          <div class="flex gap-2">
-            <input type="text" id="new-food-type-input" placeholder="e.g. Korean" class="flex-1 p-3 bg-slate-950 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-100 text-sm">
-            <button id="add-food-type-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold text-sm transition-colors">Add</button>
+        <div class="flex flex-1 min-h-0">
+          <!-- Left: setting categories -->
+          <nav class="w-44 flex-shrink-0 border-r border-white/5 py-2" style="border-color: rgba(255,255,255,0.06);" aria-label="Settings sections">
+            <button type="button" id="settings-nav-layout" class="settings-nav-item w-full text-left px-4 py-2.5 text-sm font-medium transition-colors rounded-r-lg" data-section="layout">
+              Layout
+            </button>
+            <button type="button" id="settings-nav-food-types" class="settings-nav-item w-full text-left px-4 py-2.5 text-sm font-medium transition-colors rounded-r-lg" data-section="food-types">
+              Food types
+            </button>
+            <button type="button" id="settings-nav-tags" class="settings-nav-item w-full text-left px-4 py-2.5 text-sm font-medium transition-colors rounded-r-lg" data-section="tags">
+              Tags
+            </button>
+          </nav>
+          <!-- Right: selected section content -->
+          <div class="flex-1 overflow-y-auto p-6">
+            <div id="settings-panel-layout" class="settings-panel hidden">
+              <h3 class="text-sm font-semibold text-white mb-1">Layout</h3>
+              <p class="text-xs text-text-muted mb-3">Choose how To-Go items appear on the main screen.</p>
+              <div class="flex rounded-xl border border-white/10 overflow-hidden bg-elevated/50" role="group" aria-label="Layout view">
+                <button type="button" id="settings-view-app-icons-btn" class="view-toggle flex-1 px-3 py-2 text-sm font-semibold transition-colors" title="App icon view">
+                  App icons
+                </button>
+                <button type="button" id="settings-view-cards-btn" class="view-toggle flex-1 px-3 py-2 text-sm font-semibold transition-colors" title="All cards view">
+                  All cards
+                </button>
+              </div>
+            </div>
+            <div id="settings-panel-food-types" class="settings-panel hidden">
+              <h3 class="text-sm font-semibold text-white mb-1">Food types</h3>
+              <p class="text-xs text-text-muted mb-3">Add or remove food types for categorizing recipes and to-go spots.</p>
+              <div class="flex gap-2 mb-3">
+                <input type="text" id="new-food-type-input" placeholder="e.g. Korean" class="input-dark flex-1 p-3 text-sm">
+                <button id="add-food-type-btn" class="btn-primary px-4 py-2 rounded-xl text-sm">Add</button>
+              </div>
+              <ul id="food-types-list" class="space-y-2 max-h-64 overflow-y-auto"></ul>
+            </div>
+            <div id="settings-panel-tags" class="settings-panel hidden">
+              <h3 class="text-sm font-semibold text-white mb-1">Tags</h3>
+              <p class="text-xs text-text-muted mb-3">Assign tags to recipes and restaurants, then filter by them.</p>
+              <div class="flex gap-2 mb-3">
+                <input type="text" id="new-tag-input" placeholder="e.g. chicken, quick" class="input-dark flex-1 p-3 text-sm">
+                <button id="add-tag-btn" class="btn-primary px-4 py-2 rounded-xl text-sm">Add</button>
+              </div>
+              <ul id="tags-list" class="space-y-2 max-h-64 overflow-y-auto"></ul>
+            </div>
           </div>
-          <ul id="food-types-list" class="space-y-2 max-h-64 overflow-y-auto">
-            <!-- Populated by JS -->
-          </ul>
         </div>
       </div>
     </div>

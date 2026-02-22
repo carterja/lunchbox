@@ -1,38 +1,11 @@
-# Docker deploy (e.g. food.carterfamily.top)
+# Deployment notes
 
-## First-time setup on the server (e.g. 10.0.1.40)
+## In place
 
-1. **On the server**, clone the repo and start the app:
-
-   ```bash
-   git clone https://github.com/carterja/lunchbox food
-   cd food
-   docker compose up -d --build
-   ```
-
-3. **Port:** The app listens on **9515**. The compose file publishes `9515:9515`. Point your reverse proxy at `http://127.0.0.1:9515`.
-
-4. **Reverse proxy:** Configure `food.carterfamily.top` to proxy to that host/port. The app uses relative URLs (`/api`, `/uploads`), so no extra config is needed.
-
-5. **Data:** DB and uploads live in Docker volumes `food-data` and `food-uploads` and persist across restarts.
-
----
-
-## Updating the app after deploy
-
-Whenever you push changes to GitHub, on the server run:
-
-```bash
-cd food   # the directory you cloned into
-./deploy
-```
-
-Or manually:
-
-```bash
-cd food
-git pull
-docker compose up -d --build
-```
-
-On first deploy, make the script executable: `chmod +x deploy`.
+- **Persistence:** `docker-compose` uses named volumes `food-data` (SQLite) and `food-uploads`. Data survives container restarts and image updates.
+- **Reverse proxy:** Use your proxy (e.g. Nginx Proxy Manager, Traefik, Caddy) so only HTTPS is exposed at `lunchbox.carterfamily.top`. Don’t expose port 9515 directly to the internet.
+- **App security:** Rate limiting, 5MB upload limit, SSRF protection, XSS escaping and safe image URLs.
+- **Healthcheck:** Docker hits `https://lunchbox.carterfamily.top/health` so the container can be restarted if the app or proxy stops responding.
+- **Resource limits:** Container is limited to 512MB RAM.
+- **PWA:** `site.webmanifest` is referenced; the app is installable on supported browsers.
+- **Image optimization:** Uploaded recipe images are resized (max 1200px) and converted to WebP to save storage and bandwidth.

@@ -1,11 +1,16 @@
 const express = require('express');
+const { exec } = require('child_process');
 const multer = require('multer');
+const rateLimit = require('express-rate-limit');
 const Tesseract = require('tesseract.js');
+const { PDFParse } = require('pdf-parse');
+const fs = require('fs');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
-const { addRecipe, getAllRecipes, migrateFromJsonIfNeeded, removeRecipe, removeRecipes, updateRecipe, getAllRestaurants, addRestaurant, updateRestaurant, removeRestaurant, getAllFoodTypes, addFoodType, updateFoodType, removeFoodType } = require('./db');
+const sharp = require('sharp');
+const { addRecipe, getAllRecipes, migrateFromJsonIfNeeded, removeRecipe, removeRecipes, updateRecipe, getAllRestaurants, addRestaurant, updateRestaurant, removeRestaurant, getAllFoodTypes, addFoodType, updateFoodType, removeFoodType, getAllTags, addTag, ensureTag, removeTag } = require('./db');
 const { chromium } = require('playwright');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -13,10 +18,46 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Rate limit: stricter in production; more permissive in dev to avoid 429 on reload
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'production' ? 200 : 2000,
+  message: { error: 'Too many requests; please try again later.' },
+  standardHeaders: true
+});
+app.use('/api', apiLimiter);
+
 app.use(cors());
 app.use(bodyParser.json());
 
-const upload = multer({ dest: 'server/uploads/' });
+// Reject URLs that point at private/local hosts (SSRF protection)
+function isUrlSafeForFetch(urlString) {
+  try {
+    const u = new URL(urlString.startsWith('http') ? urlString : `https://${urlString}`);
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+    const host = (u.hostname || '').toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0') return false;
+    if (/^10\./.test(host) || /^172\.(1[6-9]|2\d|3[01])\./.test(host) || /^192\.168\./.test(host)) return false;
+    if (host.endsWith('.local')) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const uploadsDir = path.join(__dirname, 'uploads');
+fs.mkdirSync(uploadsDir, { recursive: true });
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const upload = multer({
+  limits: { fileSize: MAX_FILE_SIZE },
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadsDir),
+    filename: (req, file, cb) => {
+      const ext = file.mimetype === 'application/pdf' ? '.pdf' : (path.extname(file.originalname || '') || '.bin');
+      cb(null, uuidv4() + ext);
+    }
+  })
+});
 
 const RECIPES_FILE = path.join(__dirname, 'recipes.json');
 migrateFromJsonIfNeeded(RECIPES_FILE);
@@ -281,22 +322,51 @@ app.get('/api/recipes', (req, res) => {
   res.json(getAllRecipes());
 });
 
+const normalizeTags = (tags) => {
+  if (!Array.isArray(tags)) return [];
+  return tags.map((t) => String(t).trim()).filter(Boolean);
+};
+
+app.get('/api/tags', (req, res) => {
+  res.json(getAllTags());
+});
+
+app.post('/api/tags', (req, res) => {
+  const { name } = req.body;
+  const n = (name || '').trim();
+  if (!n) return res.status(400).json({ error: 'Tag name is required' });
+  const tag = addTag(n);
+  res.status(201).json(tag);
+});
+
+app.delete('/api/tags/:id', (req, res) => {
+  const { id } = req.params;
+  if (!id) return res.status(400).json({ error: 'Id is required' });
+  const removed = removeTag(id);
+  if (!removed) return res.status(404).json({ error: 'Tag not found' });
+  res.status(204).send();
+});
+
 app.post('/api/recipes', (req, res) => {
-  const { title, url, screenshot, type, rawText, instructions, ingredients, foodType } = req.body;
+  const { title, url, screenshot, pdfPath, type, rawText, instructions, ingredients, foodType, tags } = req.body;
   if (!title) {
     return res.status(400).json({ error: 'Title is required' });
   }
+  const tagNames = normalizeTags(tags || []);
+  tagNames.forEach(ensureTag);
 
   const recipe = {
     id: uuidv4(),
     title,
     url,
     screenshot,
+    pdfPath: pdfPath || null,
     type: type || 'General',
     rawText,
     instructions: normalizeInstructions(instructions || []),
     ingredients: Array.isArray(ingredients) ? ingredients : [],
     foodType: foodType && foodType.trim() ? foodType.trim() : null,
+    tags: tagNames,
     dateAdded: new Date().toISOString()
   };
 
@@ -306,20 +376,24 @@ app.post('/api/recipes', (req, res) => {
 
 app.put('/api/recipes/:id', (req, res) => {
   const { id } = req.params;
-  const { title, url, screenshot, type, rawText, instructions, ingredients, dateAdded, foodType } = req.body;
+  const { title, url, screenshot, pdfPath, type, rawText, instructions, ingredients, dateAdded, foodType, tags } = req.body;
   if (!id) return res.status(400).json({ error: 'Recipe id is required' });
   if (!title) return res.status(400).json({ error: 'Title is required' });
+  const tagNames = normalizeTags(tags || []);
+  tagNames.forEach(ensureTag);
 
   const recipe = {
     id,
     title,
     url,
     screenshot,
+    pdfPath: pdfPath || null,
     type: type || 'General',
     rawText,
     instructions: normalizeInstructions(instructions || []),
     ingredients: Array.isArray(ingredients) ? ingredients : [],
     foodType: foodType && foodType.trim() ? foodType.trim() : null,
+    tags: tagNames,
     dateAdded: dateAdded || new Date().toISOString()
   };
 
@@ -354,16 +428,72 @@ app.get('/api/restaurants', (req, res) => {
   res.json(getAllRestaurants());
 });
 
+app.get('/api/site-images', async (req, res) => {
+  const rawUrl = req.query.url;
+  if (!rawUrl || !rawUrl.trim()) {
+    return res.status(400).json({ error: 'url query parameter is required' });
+  }
+  const pageUrl = rawUrl.startsWith('http') ? rawUrl : `https://${rawUrl}`;
+  if (!isUrlSafeForFetch(pageUrl)) {
+    return res.status(400).json({ error: 'URL not allowed' });
+  }
+  try {
+    const response = await axios.get(pageUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+      },
+      timeout: 10000,
+      validateStatus: (s) => s >= 200 && s < 400
+    });
+    const base = new URL(pageUrl);
+    const resolve = (href) => {
+      if (!href || !href.trim()) return null;
+      try {
+        return new URL(href, base).href;
+      } catch {
+        return null;
+      }
+    };
+    const $ = cheerio.load(response.data);
+    const seen = new Set();
+    const add = (url, type) => {
+      const u = resolve(url);
+      if (u && !seen.has(u)) {
+        seen.add(u);
+        images.push({ url: u, type });
+      }
+    };
+    const images = [];
+    $('meta[property="og:image"]').each((_, el) => add($(el).attr('content'), 'og'));
+    $('meta[name="twitter:image"]').each((_, el) => add($(el).attr('content'), 'twitter'));
+    $('link[rel*="icon"]').each((_, el) => add($(el).attr('href'), 'icon'));
+    $('img[src]').each((_, el) => {
+      if (images.length >= 25) return false;
+      add($(el).attr('src'), 'img');
+    });
+    res.json({ images });
+  } catch (err) {
+    console.error('site-images error:', err.message);
+    res.status(500).json({ error: 'Could not fetch page: ' + (err.message || 'Unknown error') });
+  }
+});
+
 app.post('/api/restaurants', (req, res) => {
-  const { name, orderingUrl, foodType } = req.body;
+  const { name, orderingUrl, mainUrl, iconUrl, foodType, tags } = req.body;
   if (!name || !name.trim()) {
     return res.status(400).json({ error: 'Restaurant name is required' });
   }
+  const tagNames = normalizeTags(tags || []);
+  tagNames.forEach(ensureTag);
   const restaurant = {
     id: uuidv4(),
     name: name.trim(),
     orderingUrl: orderingUrl && orderingUrl.trim() ? orderingUrl.trim() : null,
+    mainUrl: mainUrl && mainUrl.trim() ? mainUrl.trim() : null,
+    iconUrl: iconUrl && iconUrl.trim() ? iconUrl.trim() : null,
     foodType: foodType && foodType.trim() ? foodType.trim() : null,
+    tags: tagNames,
     dateAdded: new Date().toISOString()
   };
   addRestaurant(restaurant);
@@ -372,14 +502,19 @@ app.post('/api/restaurants', (req, res) => {
 
 app.put('/api/restaurants/:id', (req, res) => {
   const { id } = req.params;
-  const { name, orderingUrl, foodType } = req.body;
+  const { name, orderingUrl, mainUrl, iconUrl, foodType, tags } = req.body;
   if (!id) return res.status(400).json({ error: 'Restaurant id is required' });
   if (!name || !name.trim()) return res.status(400).json({ error: 'Restaurant name is required' });
+  const tagNames = normalizeTags(tags || []);
+  tagNames.forEach(ensureTag);
   const restaurant = {
     id,
     name: name.trim(),
     orderingUrl: orderingUrl && orderingUrl.trim() ? orderingUrl.trim() : null,
+    mainUrl: mainUrl && mainUrl.trim() ? mainUrl.trim() : null,
+    iconUrl: iconUrl && iconUrl.trim() ? iconUrl.trim() : null,
     foodType: foodType && foodType.trim() ? foodType.trim() : null,
+    tags: tagNames,
     dateAdded: req.body.dateAdded || new Date().toISOString()
   };
   const updated = updateRestaurant(restaurant);
@@ -427,6 +562,8 @@ app.delete('/api/food-types/:id', (req, res) => {
 
 app.post('/api/recipes/preview/url', async (req, res) => {
   const { url } = req.body;
+  if (!url || !url.trim()) return res.status(400).json({ error: 'URL is required' });
+  if (!isUrlSafeForFetch(url)) return res.status(400).json({ error: 'URL not allowed' });
   console.log(`Attempting to scrape URL: ${url}`);
   try {
     let response;
@@ -499,28 +636,139 @@ app.post('/api/recipes/preview/url', async (req, res) => {
   }
 });
 
+// Upload recipe image only (no OCR). Optimizes with sharp (resize + webp) then returns path.
+const MAX_IMAGE_SIDE = 1200;
+app.post('/api/recipes/upload-image', upload.single('image'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No image uploaded' });
+  }
+  const isImage = (req.file.mimetype || '').startsWith('image/');
+  if (!isImage) {
+    try { fs.unlinkSync(req.file.path); } catch (_) {}
+    return res.status(400).json({ error: 'File must be an image' });
+  }
+  const outFilename = uuidv4() + '.webp';
+  const outPath = path.join(uploadsDir, outFilename);
+  try {
+    await sharp(req.file.path)
+      .resize(MAX_IMAGE_SIDE, MAX_IMAGE_SIDE, { fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 85 })
+      .toFile(outPath);
+    try { fs.unlinkSync(req.file.path); } catch (_) {}
+    return res.json({ path: `/uploads/${outFilename}` });
+  } catch (err) {
+    try { fs.unlinkSync(req.file.path); } catch (_) {}
+    console.error('Image optimization error:', err.message);
+    return res.status(500).json({ error: 'Failed to process image' });
+  }
+});
+
 app.post('/api/recipes/preview/upload', upload.single('screenshot'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
 
   try {
-    const { data: { text } } = await Tesseract.recognize(req.file.path, 'eng');
+    const isPdf = req.file.mimetype === 'application/pdf' || /\.pdf$/i.test(req.file.originalname || '');
+    let text;
+
+    if (isPdf) {
+      const dataBuffer = fs.readFileSync(req.file.path);
+      const parser = new PDFParse({ data: dataBuffer });
+      const result = await parser.getText();
+      await parser.destroy();
+      text = result.text || '';
+    } else {
+      const { data: { text: ocrText } } = await Tesseract.recognize(req.file.path, 'eng');
+      text = ocrText;
+    }
 
     const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-    const title = lines[0] || 'Scanned Recipe';
+    const title = lines[0] || (isPdf ? 'Recipe from PDF' : 'Scanned Recipe');
     const instructions = extractInstructionsFromText(lines.slice(1));
 
     res.json({
       title: title.trim(),
-      screenshot: `/uploads/${req.file.filename}`,
+      screenshot: isPdf ? null : `/uploads/${req.file.filename}`,
+      pdfPath: isPdf ? `/uploads/${req.file.filename}` : null,
       type: 'Scanned',
       rawText: text,
       instructions
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to process image' });
+    console.error('Preview upload error:', error);
+    const msg = error.message || 'Unknown error';
+    res.status(500).json({ error: `Failed to process file: ${msg}` });
   }
+});
+
+// Grocery list: send to Apple Notes (macOS only)
+// Uses UI scripting to create native checklist items (Notes body property only supports plain text)
+app.post('/api/grocery-list/send-to-notes', (req, res) => {
+  const { title, items } = req.body;
+  const list = Array.isArray(items) ? items.map((i) => String(i).trim()) : [];
+  const noteTitle = (title && String(title).trim()) || 'Grocery List';
+
+  if (process.platform !== 'darwin') {
+    return res.status(501).json({ error: 'Apple Notes integration is only available on macOS' });
+  }
+
+  const escapeForAppleScript = (s) => s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  const safeTitle = escapeForAppleScript(noteTitle);
+
+  const itemLines = list.map((item) => {
+    const safe = escapeForAppleScript(item);
+    return `    keystroke "${safe}"
+    keystroke return`;
+  });
+
+  const checklistBlock = itemLines.length > 0
+    ? `    keystroke "l" using {command down, shift down}
+    delay 0.2
+${itemLines.join('\n')}`
+    : '';
+
+  const script = `tell application "Notes" to activate
+delay 0.5
+tell application "System Events"
+  tell process "Notes"
+    keystroke "n" using command down
+    delay 0.3
+    keystroke "${safeTitle}"
+    keystroke return
+${checklistBlock}
+  end tell
+end tell`;
+
+  const scriptPath = path.join(uploadsDir, `grocery-notes-${Date.now()}.scpt`);
+  try {
+    fs.writeFileSync(scriptPath, script);
+    exec(`osascript "${scriptPath}"`, (err, stdout, stderr) => {
+      try { fs.unlinkSync(scriptPath); } catch (_) {}
+      if (err) {
+        console.error('AppleScript error:', err, stderr);
+        return res.status(500).json({
+          error: 'Failed to create Apple Note. Grant Automation/Accessibility permission for Notes and Terminal.'
+        });
+      }
+      res.json({ success: true });
+    });
+  } catch (writeErr) {
+    return res.status(500).json({ error: 'Failed to write AppleScript' });
+  }
+});
+
+// Handle multer file size limit (and other errors)
+app.use((err, req, res, next) => {
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ error: 'File too large. Maximum size is 5MB.' });
+  }
+  next(err);
+});
+
+// Health check for Docker/orchestration (restart if app hangs)
+app.get('/health', (req, res) => {
+  res.status(200).json({ ok: true });
 });
 
 // Static files last so /api/* is handled above

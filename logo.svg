@@ -1,0 +1,46 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="neonGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#7C3AED" flood-opacity="0.7"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#06B6D4" flood-opacity="0.7"/>
+    </filter>
+  </defs>
+
+  <!-- Lunchbox Lid -->
+  <rect x="56" y="56" width="144" height="64" rx="16"
+        fill="none"
+        stroke="url(#neonGradient)"
+        stroke-width="14"
+        filter="url(#neonGlow)"
+        stroke-dasharray="448"
+        stroke-dashoffset="448">
+    <animate attributeName="stroke-dashoffset" from="448" to="0" dur="1.2s" fill="freeze" />
+  </rect>
+
+  <!-- Lunchbox Base -->
+  <rect x="32" y="96" width="192" height="96" rx="20"
+        fill="none"
+        stroke="url(#neonGradient)"
+        stroke-width="14"
+        filter="url(#neonGlow)"
+        stroke-dasharray="576"
+        stroke-dashoffset="576">
+    <animate attributeName="stroke-dashoffset" from="576" to="0" begin="1.2s" dur="1.4s" fill="freeze" />
+  </rect>
+
+  <!-- Smile Curve -->
+  <path d="M72 144 Q128 176 184 144"
+        stroke="url(#neonGradient)"
+        stroke-width="7"
+        fill="none"
+        stroke-linecap="round"
+        filter="url(#neonGlow)"
+        stroke-dasharray="224"
+        stroke-dashoffset="224">
+    <animate attributeName="stroke-dashoffset" from="224" to="0" begin="2.6s" dur="0.8s" fill="freeze" />
+  </path>
+</svg>

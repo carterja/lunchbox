@@ -15,9 +15,11 @@ module.exports = merge(common, {
     hot: true,
     open: true,
     static: { directory: path.join(__dirname), publicPath: '/', serveIndex: false },
-    proxy: {
-      '/api': 'http://localhost:3000',
-      '/uploads': 'http://localhost:3000',
-    },
+    proxy: [
+      {
+        context: ['/api', '/uploads'],
+        target: 'http://localhost:3000',
+      },
+    ],
   },
 });

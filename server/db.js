@@ -42,6 +42,18 @@ db.exec(`
 try { db.exec('ALTER TABLE recipes ADD COLUMN food_type TEXT'); } catch (_) {}
 try { db.exec('ALTER TABLE restaurants ADD COLUMN food_type TEXT'); } catch (_) {}
 try { db.exec('ALTER TABLE recipes ADD COLUMN ingredients TEXT'); } catch (_) {}
+try { db.exec('ALTER TABLE recipes ADD COLUMN pdf_path TEXT'); } catch (_) {}
+try { db.exec('ALTER TABLE recipes ADD COLUMN tags TEXT'); } catch (_) {}
+try { db.exec('ALTER TABLE restaurants ADD COLUMN tags TEXT'); } catch (_) {}
+try { db.exec('ALTER TABLE restaurants ADD COLUMN main_url TEXT'); } catch (_) {}
+try { db.exec('ALTER TABLE restaurants ADD COLUMN icon_url TEXT'); } catch (_) {}
+db.exec(`
+  CREATE TABLE IF NOT EXISTS tags (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    sort_order INTEGER NOT NULL DEFAULT 0
+  );
+`);
 
 const defaultFoodTypes = [
   'Pizza', 'Chinese', 'Thai', 'Burgers', 'Fast food', 'Pasta', 'Mexican', 'Indian', 'Japanese', 'Other'
@@ -77,11 +89,63 @@ const removeFoodType = (id) => {
   return result.changes > 0;
 };
 
+// Tags
+const selectAllTags = db.prepare('SELECT * FROM tags ORDER BY sort_order ASC, name ASC');
+const insertTag = db.prepare('INSERT OR IGNORE INTO tags (id, name, sort_order) VALUES (@id, @name, @sort_order)');
+const deleteTagById = db.prepare('DELETE FROM tags WHERE id = ?');
+const getTagByName = db.prepare('SELECT id, name FROM tags WHERE name = ?');
+
+const getAllTags = () => selectAllTags.all().map((row) => ({ id: row.id, name: row.name }));
+
+const ensureTag = (name) => {
+  const n = (name || '').trim();
+  if (!n) return null;
+  let row = getTagByName.get(n);
+  if (!row) {
+    const id = uuidv4();
+    const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) + 1 as next FROM tags').get();
+    insertTag.run({ id, name: n, sort_order: maxOrder.next });
+    row = { id, name: n };
+  }
+  return row.name;
+};
+
+const addTag = (name) => {
+  const n = (name || '').trim();
+  if (!n) return null;
+  const existing = getTagByName.get(n);
+  if (existing) return { id: existing.id, name: existing.name };
+  const id = uuidv4();
+  const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) + 1 as next FROM tags').get();
+  insertTag.run({ id, name: n, sort_order: maxOrder.next });
+  return { id, name: n };
+};
+
+const removeTag = (id) => {
+  const nameRow = db.prepare('SELECT name FROM tags WHERE id = ?').get(id);
+  if (!nameRow) return false;
+  const name = nameRow.name;
+  const recipes = db.prepare('SELECT id, tags FROM recipes WHERE tags IS NOT NULL').all();
+  recipes.forEach((r) => {
+    const arr = r.tags ? JSON.parse(r.tags) : [];
+    const next = arr.filter((t) => t !== name);
+    db.prepare('UPDATE recipes SET tags = ? WHERE id = ?').run(JSON.stringify(next), r.id);
+  });
+  const restaurants = db.prepare('SELECT id, tags FROM restaurants WHERE tags IS NOT NULL').all();
+  restaurants.forEach((r) => {
+    const arr = r.tags ? JSON.parse(r.tags) : [];
+    const next = arr.filter((t) => t !== name);
+    db.prepare('UPDATE restaurants SET tags = ? WHERE id = ?').run(JSON.stringify(next), r.id);
+  });
+  const result = deleteTagById.run(id);
+  return result.changes > 0;
+};
+
 const insertRecipe = db.prepare(`
   INSERT INTO recipes (
-    id, title, url, screenshot, type, raw_text, instructions, ingredients, food_type, date_added
+    id, title, url, screenshot, type, raw_text, instructions, ingredients, food_type, pdf_path, tags, date_added
   ) VALUES (
-    @id, @title, @url, @screenshot, @type, @raw_text, @instructions, @ingredients, @food_type, @date_added
+    @id, @title, @url, @screenshot, @type, @raw_text, @instructions, @ingredients, @food_type, @pdf_path, @tags, @date_added
   )
 `);
 
@@ -96,7 +160,9 @@ const updateRecipeById = db.prepare(`
       raw_text = @raw_text,
       instructions = @instructions,
       ingredients = @ingredients,
-      food_type = @food_type
+      food_type = @food_type,
+      pdf_path = @pdf_path,
+      tags = @tags
   WHERE id = @id
 `);
 const countRecipes = db.prepare('SELECT COUNT(*) as count FROM recipes');
@@ -111,6 +177,8 @@ const toRow = (recipe) => ({
   instructions: JSON.stringify(recipe.instructions || []),
   ingredients: recipe.ingredients != null ? JSON.stringify(recipe.ingredients) : null,
   food_type: recipe.foodType || null,
+  pdf_path: recipe.pdfPath || null,
+  tags: recipe.tags != null ? JSON.stringify(recipe.tags) : null,
   date_added: recipe.dateAdded
 });
 
@@ -124,6 +192,8 @@ const fromRow = (row) => ({
   instructions: row.instructions ? JSON.parse(row.instructions) : [],
   ingredients: row.ingredients ? JSON.parse(row.ingredients) : [],
   foodType: row.food_type || null,
+  pdfPath: row.pdf_path || null,
+  tags: row.tags ? JSON.parse(row.tags) : [],
   dateAdded: row.date_added
 });
 
@@ -160,13 +230,13 @@ const removeRecipes = (ids) => {
 // Restaurants
 const selectAllRestaurants = db.prepare('SELECT * FROM restaurants ORDER BY date_added DESC');
 const insertRestaurant = db.prepare(`
-  INSERT INTO restaurants (id, name, ordering_url, food_type, date_added)
-  VALUES (@id, @name, @ordering_url, @food_type, @date_added)
+  INSERT INTO restaurants (id, name, ordering_url, main_url, icon_url, food_type, tags, date_added)
+  VALUES (@id, @name, @ordering_url, @main_url, @icon_url, @food_type, @tags, @date_added)
 `);
 const deleteRestaurantById = db.prepare('DELETE FROM restaurants WHERE id = ?');
 const updateRestaurantById = db.prepare(`
   UPDATE restaurants
-  SET name = @name, ordering_url = @ordering_url, food_type = @food_type
+  SET name = @name, ordering_url = @ordering_url, main_url = @main_url, icon_url = @icon_url, food_type = @food_type, tags = @tags
   WHERE id = @id
 `);
 
@@ -174,15 +244,21 @@ const restaurantToRow = (r) => ({
   id: r.id,
   name: r.name,
   ordering_url: r.orderingUrl || null,
+  main_url: r.mainUrl || null,
+  icon_url: r.iconUrl || null,
   food_type: r.foodType || null,
+  tags: r.tags != null ? JSON.stringify(r.tags) : null,
   date_added: r.dateAdded
 });
 
 const restaurantFromRow = (row) => ({
   id: row.id,
   name: row.name,
-  orderingUrl: row.ordering_url,
+  orderingUrl: row.ordering_url ?? null,
+  mainUrl: row.main_url ?? null,
+  iconUrl: row.icon_url ?? null,
   foodType: row.food_type || null,
+  tags: row.tags ? JSON.parse(row.tags) : [],
   dateAdded: row.date_added
 });
 
@@ -253,5 +329,9 @@ module.exports = {
   getAllFoodTypes,
   addFoodType,
   updateFoodType,
-  removeFoodType
+  removeFoodType,
+  getAllTags,
+  addTag,
+  ensureTag,
+  removeTag
 };
