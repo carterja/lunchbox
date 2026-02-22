@@ -1,11 +1,13 @@
 const express = require('express');
 const multer = require('multer');
 const Tesseract = require('tesseract.js');
+const { PDFParse } = require('pdf-parse');
+const fs = require('fs');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
-const { addRecipe, getAllRecipes, migrateFromJsonIfNeeded, removeRecipe, removeRecipes, updateRecipe, getAllRestaurants, addRestaurant, updateRestaurant, removeRestaurant, getAllFoodTypes, addFoodType, updateFoodType, removeFoodType } = require('./db');
+const { addRecipe, getAllRecipes, migrateFromJsonIfNeeded, removeRecipe, removeRecipes, updateRecipe, getAllRestaurants, addRestaurant, updateRestaurant, removeRestaurant, getAllFoodTypes, addFoodType, updateFoodType, removeFoodType, getAllTags, addTag, ensureTag, removeTag } = require('./db');
 const { chromium } = require('playwright');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -16,7 +18,17 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
-const upload = multer({ dest: 'server/uploads/' });
+const uploadsDir = path.join(__dirname, 'uploads');
+fs.mkdirSync(uploadsDir, { recursive: true });
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadsDir),
+    filename: (req, file, cb) => {
+      const ext = file.mimetype === 'application/pdf' ? '.pdf' : (path.extname(file.originalname || '') || '.bin');
+      cb(null, uuidv4() + ext);
+    }
+  })
+});
 
 const RECIPES_FILE = path.join(__dirname, 'recipes.json');
 migrateFromJsonIfNeeded(RECIPES_FILE);
@@ -281,22 +293,51 @@ app.get('/api/recipes', (req, res) => {
   res.json(getAllRecipes());
 });
 
+const normalizeTags = (tags) => {
+  if (!Array.isArray(tags)) return [];
+  return tags.map((t) => String(t).trim()).filter(Boolean);
+};
+
+app.get('/api/tags', (req, res) => {
+  res.json(getAllTags());
+});
+
+app.post('/api/tags', (req, res) => {
+  const { name } = req.body;
+  const n = (name || '').trim();
+  if (!n) return res.status(400).json({ error: 'Tag name is required' });
+  const tag = addTag(n);
+  res.status(201).json(tag);
+});
+
+app.delete('/api/tags/:id', (req, res) => {
+  const { id } = req.params;
+  if (!id) return res.status(400).json({ error: 'Id is required' });
+  const removed = removeTag(id);
+  if (!removed) return res.status(404).json({ error: 'Tag not found' });
+  res.status(204).send();
+});
+
 app.post('/api/recipes', (req, res) => {
-  const { title, url, screenshot, type, rawText, instructions, ingredients, foodType } = req.body;
+  const { title, url, screenshot, pdfPath, type, rawText, instructions, ingredients, foodType, tags } = req.body;
   if (!title) {
     return res.status(400).json({ error: 'Title is required' });
   }
+  const tagNames = normalizeTags(tags || []);
+  tagNames.forEach(ensureTag);
 
   const recipe = {
     id: uuidv4(),
     title,
     url,
     screenshot,
+    pdfPath: pdfPath || null,
     type: type || 'General',
     rawText,
     instructions: normalizeInstructions(instructions || []),
     ingredients: Array.isArray(ingredients) ? ingredients : [],
     foodType: foodType && foodType.trim() ? foodType.trim() : null,
+    tags: tagNames,
     dateAdded: new Date().toISOString()
   };
 
@@ -306,20 +347,24 @@ app.post('/api/recipes', (req, res) => {
 
 app.put('/api/recipes/:id', (req, res) => {
   const { id } = req.params;
-  const { title, url, screenshot, type, rawText, instructions, ingredients, dateAdded, foodType } = req.body;
+  const { title, url, screenshot, pdfPath, type, rawText, instructions, ingredients, dateAdded, foodType, tags } = req.body;
   if (!id) return res.status(400).json({ error: 'Recipe id is required' });
   if (!title) return res.status(400).json({ error: 'Title is required' });
+  const tagNames = normalizeTags(tags || []);
+  tagNames.forEach(ensureTag);
 
   const recipe = {
     id,
     title,
     url,
     screenshot,
+    pdfPath: pdfPath || null,
     type: type || 'General',
     rawText,
     instructions: normalizeInstructions(instructions || []),
     ingredients: Array.isArray(ingredients) ? ingredients : [],
     foodType: foodType && foodType.trim() ? foodType.trim() : null,
+    tags: tagNames,
     dateAdded: dateAdded || new Date().toISOString()
   };
 
@@ -355,15 +400,18 @@ app.get('/api/restaurants', (req, res) => {
 });
 
 app.post('/api/restaurants', (req, res) => {
-  const { name, orderingUrl, foodType } = req.body;
+  const { name, orderingUrl, foodType, tags } = req.body;
   if (!name || !name.trim()) {
     return res.status(400).json({ error: 'Restaurant name is required' });
   }
+  const tagNames = normalizeTags(tags || []);
+  tagNames.forEach(ensureTag);
   const restaurant = {
     id: uuidv4(),
     name: name.trim(),
     orderingUrl: orderingUrl && orderingUrl.trim() ? orderingUrl.trim() : null,
     foodType: foodType && foodType.trim() ? foodType.trim() : null,
+    tags: tagNames,
     dateAdded: new Date().toISOString()
   };
   addRestaurant(restaurant);
@@ -372,14 +420,17 @@ app.post('/api/restaurants', (req, res) => {
 
 app.put('/api/restaurants/:id', (req, res) => {
   const { id } = req.params;
-  const { name, orderingUrl, foodType } = req.body;
+  const { name, orderingUrl, foodType, tags } = req.body;
   if (!id) return res.status(400).json({ error: 'Restaurant id is required' });
   if (!name || !name.trim()) return res.status(400).json({ error: 'Restaurant name is required' });
+  const tagNames = normalizeTags(tags || []);
+  tagNames.forEach(ensureTag);
   const restaurant = {
     id,
     name: name.trim(),
     orderingUrl: orderingUrl && orderingUrl.trim() ? orderingUrl.trim() : null,
     foodType: foodType && foodType.trim() ? foodType.trim() : null,
+    tags: tagNames,
     dateAdded: req.body.dateAdded || new Date().toISOString()
   };
   const updated = updateRestaurant(restaurant);
@@ -505,21 +556,36 @@ app.post('/api/recipes/preview/upload', upload.single('screenshot'), async (req,
   }
 
   try {
-    const { data: { text } } = await Tesseract.recognize(req.file.path, 'eng');
+    const isPdf = req.file.mimetype === 'application/pdf' || /\.pdf$/i.test(req.file.originalname || '');
+    let text;
+
+    if (isPdf) {
+      const dataBuffer = fs.readFileSync(req.file.path);
+      const parser = new PDFParse({ data: dataBuffer });
+      const result = await parser.getText();
+      await parser.destroy();
+      text = result.text || '';
+    } else {
+      const { data: { text: ocrText } } = await Tesseract.recognize(req.file.path, 'eng');
+      text = ocrText;
+    }
 
     const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-    const title = lines[0] || 'Scanned Recipe';
+    const title = lines[0] || (isPdf ? 'Recipe from PDF' : 'Scanned Recipe');
     const instructions = extractInstructionsFromText(lines.slice(1));
 
     res.json({
       title: title.trim(),
-      screenshot: `/uploads/${req.file.filename}`,
+      screenshot: isPdf ? null : `/uploads/${req.file.filename}`,
+      pdfPath: isPdf ? `/uploads/${req.file.filename}` : null,
       type: 'Scanned',
       rawText: text,
       instructions
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to process image' });
+    console.error('Preview upload error:', error);
+    const msg = error.message || 'Unknown error';
+    res.status(500).json({ error: `Failed to process file: ${msg}` });
   }
 });
 

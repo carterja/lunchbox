@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const cardList = document.getElementById('card-list');
   const cardFilter = document.getElementById('card-filter');
   const foodTypeFilter = document.getElementById('food-type-filter');
+  const tagFilter = document.getElementById('tag-filter');
   const typeFilter = document.getElementById('type-filter');
   const openSettingsBtn = document.getElementById('open-settings-btn');
 
@@ -34,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const editTitle = document.getElementById('edit-title');
   const editType = document.getElementById('edit-type');
   const editFoodType = document.getElementById('edit-food-type');
+  const editTagsContainer = document.getElementById('edit-tags-container');
   const editIngredients = document.getElementById('edit-ingredients');
   const editText = document.getElementById('edit-text');
   const editInstructions = document.getElementById('edit-instructions');
@@ -53,6 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const detailUrl = document.getElementById('detail-url');
   const detailUrlText = document.getElementById('detail-url-text');
   const detailUrlContainer = document.getElementById('detail-url-container');
+  const detailPdfLink = document.getElementById('detail-pdf-link');
+  const detailPdfContainer = document.getElementById('detail-pdf-container');
   const detailRawText = document.getElementById('detail-raw-text');
   const detailRawTextContainer = document.getElementById('detail-raw-text-container');
   const detailIngredients = document.getElementById('detail-ingredients');
@@ -82,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const inlineEditUrl = document.getElementById('inline-edit-url');
   const refreshFromUrlBtn = document.getElementById('refresh-from-url-btn');
   const inlineEditFoodType = document.getElementById('inline-edit-food-type');
+  const inlineEditTagsContainer = document.getElementById('inline-edit-tags-container');
   const inlineEditIngredients = document.getElementById('inline-edit-ingredients');
   const inlineEditInstructions = document.getElementById('inline-edit-instructions');
 
@@ -96,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const restaurantModalTitle = document.getElementById('restaurant-modal-title');
   const restaurantNameInput = document.getElementById('restaurant-name');
   const restaurantFoodType = document.getElementById('restaurant-food-type');
+  const restaurantTagsContainer = document.getElementById('restaurant-tags-container');
   const restaurantOrderingUrlInput = document.getElementById('restaurant-ordering-url');
   const restaurantSearchLinkBtn = document.getElementById('restaurant-search-link-btn');
   const restaurantDeleteBtn = document.getElementById('restaurant-delete-btn');
@@ -111,12 +117,19 @@ document.addEventListener('DOMContentLoaded', () => {
   let allRestaurants = [];
   let currentRestaurant = null;
   let allFoodTypes = [];
+  let allTags = [];
+  let editFormTags = [];
+  let restaurantFormTags = [];
+  let inlineEditTags = [];
 
   const settingsModal = document.getElementById('settings-modal');
   const closeSettingsBtn = document.getElementById('close-settings-btn');
   const newFoodTypeInput = document.getElementById('new-food-type-input');
   const addFoodTypeBtn = document.getElementById('add-food-type-btn');
   const foodTypesList = document.getElementById('food-types-list');
+  const newTagInput = document.getElementById('new-tag-input');
+  const addTagBtn = document.getElementById('add-tag-btn');
+  const tagsList = document.getElementById('tags-list');
 
   // Modal Logic
   const openModal = () => {
@@ -197,6 +210,9 @@ document.addEventListener('DOMContentLoaded', () => {
       previewInstructionsContainer.classList.add('hidden');
     }
 
+    editFormTags = data.tags || [];
+    if (editTagsContainer) renderTagSelector(editTagsContainer, editFormTags, (t) => { editFormTags = t; });
+
     modalStep1.classList.add('hidden');
     modalStep2.classList.remove('hidden');
   };
@@ -217,6 +233,73 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error('Error fetching food types:', err);
     }
+  };
+
+  const fetchTags = async () => {
+    try {
+      const response = await fetch('/api/tags');
+      allTags = await response.json();
+      if (tagFilter) {
+        const v = tagFilter.value;
+        tagFilter.innerHTML = '<option value="">All tags</option>';
+        allTags.forEach((t) => {
+          const opt = document.createElement('option');
+          opt.value = t.name;
+          opt.textContent = t.name;
+          tagFilter.appendChild(opt);
+        });
+        if (v) tagFilter.value = v;
+      }
+    } catch (err) {
+      console.error('Error fetching tags:', err);
+    }
+  };
+
+  const renderTagSelector = (container, selectedTags, setSelectedTags) => {
+    if (!container) return;
+    const toggle = (name) => {
+      const idx = selectedTags.indexOf(name);
+      const next = idx >= 0 ? selectedTags.filter((_, i) => i !== idx) : [...selectedTags, name];
+      setSelectedTags(next);
+      renderTagSelector(container, next, setSelectedTags);
+    };
+    const addNew = () => {
+      const input = container.querySelector('.tag-add-input');
+      if (!input) return;
+      const name = (input.value || '').trim();
+      if (!name) return;
+      input.value = '';
+      if (selectedTags.includes(name)) return;
+      const next = [...selectedTags, name];
+      setSelectedTags(next);
+      fetch('/api/tags', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) })
+        .then((r) => { if (r.ok) fetchTags(); });
+      renderTagSelector(container, next, setSelectedTags);
+    };
+    container.innerHTML = '';
+    const all = [...new Set([...allTags.map((t) => t.name), ...selectedTags])].sort();
+    all.forEach((name) => {
+      const pill = document.createElement('span');
+      pill.className = `inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium cursor-pointer transition-colors ${selectedTags.includes(name) ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`;
+      pill.textContent = name;
+      pill.addEventListener('click', () => toggle(name));
+      container.appendChild(pill);
+    });
+    const wrap = document.createElement('span');
+    wrap.className = 'inline-flex items-center gap-1';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'Add tag';
+    input.className = 'tag-add-input w-20 px-2 py-0.5 bg-slate-950 border border-slate-600 rounded text-xs text-slate-100 focus:ring-1 focus:ring-indigo-500';
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addNew(); } });
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'px-2 py-0.5 text-xs font-medium text-indigo-400 hover:text-indigo-300';
+    addBtn.textContent = '+';
+    addBtn.addEventListener('click', addNew);
+    wrap.appendChild(input);
+    wrap.appendChild(addBtn);
+    container.appendChild(wrap);
   };
 
   const populateFoodTypeSelect = (selectEl) => {
@@ -260,12 +343,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!cardList) return;
     const show = cardFilter ? cardFilter.value : 'all';
     const foodType = foodTypeFilter ? foodTypeFilter.value : '';
+    const tagName = tagFilter ? tagFilter.value : '';
     if (typeFilter) typeFilter.classList.toggle('hidden', show !== 'recipes');
     let filteredRecipes = show === 'restaurants' ? [] : (typeFilter && typeFilter.value !== 'all' ? allRecipes.filter((r) => r.type === typeFilter.value) : allRecipes);
     let filteredRestaurants = show === 'recipes' ? [] : allRestaurants;
     if (foodType) {
       filteredRecipes = filteredRecipes.filter((r) => r.foodType === foodType);
       filteredRestaurants = filteredRestaurants.filter((r) => r.foodType === foodType);
+    }
+    if (tagName) {
+      filteredRecipes = filteredRecipes.filter((r) => (r.tags || []).includes(tagName));
+      filteredRestaurants = filteredRestaurants.filter((r) => (r.tags || []).includes(tagName));
     }
     const items = [
       ...filteredRecipes.map((r) => ({ ...r, _type: 'recipe', _sortDate: new Date(r.dateAdded).getTime() })),
@@ -282,7 +370,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ? (item.type === 'Scanned' ? '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-200 uppercase">Scanned</span>' : '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-200 uppercase">Recipe</span>')
         : '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-200 uppercase">To-Go</span>';
       const foodTypeBadge = item.foodType ? `<span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-600 text-slate-200">${item.foodType}</span>` : '';
-      const badge = foodTypeBadge ? `${typeBadge} ${foodTypeBadge}` : typeBadge;
+      const tagBadges = (item.tags || []).slice(0, 3).map((t) => `<span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-indigo-500/30 text-indigo-200">${t}</span>`).join('');
+      const badge = [typeBadge, foodTypeBadge, tagBadges].filter(Boolean).join(' ');
       const title = isRecipe ? item.title : item.name;
       const action = isRecipe
         ? (item.url ? `<span class="text-indigo-300 text-xs flex items-center gap-1">View${linkIcon}</span>` : '<span class="text-slate-500 text-xs">No link</span>')
@@ -334,15 +423,18 @@ document.addEventListener('DOMContentLoaded', () => {
       restaurantModalTitle.textContent = 'Edit Restaurant';
       restaurantNameInput.value = restaurant.name;
       if (restaurantFoodType) restaurantFoodType.value = restaurant.foodType || '';
+      restaurantFormTags = restaurant.tags || [];
       restaurantOrderingUrlInput.value = restaurant.orderingUrl || '';
       restaurantDeleteBtn.classList.remove('hidden');
     } else {
       restaurantModalTitle.textContent = 'Add Restaurant';
       restaurantNameInput.value = '';
       if (restaurantFoodType) restaurantFoodType.value = '';
+      restaurantFormTags = [];
       restaurantOrderingUrlInput.value = '';
       restaurantDeleteBtn.classList.add('hidden');
     }
+    if (restaurantTagsContainer) renderTagSelector(restaurantTagsContainer, restaurantFormTags, (t) => { restaurantFormTags = t; });
     restaurantModal.classList.remove('hidden');
   };
 
@@ -427,6 +519,8 @@ document.addEventListener('DOMContentLoaded', () => {
         inlineEditTitle.value = currentDetail.title;
         if (inlineEditUrl) inlineEditUrl.value = currentDetail.url || '';
         if (inlineEditFoodType) inlineEditFoodType.value = currentDetail.foodType || '';
+        inlineEditTags = currentDetail.tags || [];
+        if (inlineEditTagsContainer) renderTagSelector(inlineEditTagsContainer, inlineEditTags, (t) => { inlineEditTags = t; });
         inlineEditIngredients.value = (currentDetail.ingredients || []).join('\n');
         inlineEditInstructions.value = (currentDetail.instructions || []).join('\n');
       }
@@ -455,6 +549,13 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       detailUrlContainer.classList.add('hidden');
     }
+    if (recipe.pdfPath) {
+      detailPdfLink.href = recipe.pdfPath;
+      detailPdfLink.download = (recipe.title || 'recipe').replace(/[^a-z0-9.-]/gi, '_') + '.pdf';
+      detailPdfContainer.classList.remove('hidden');
+    } else {
+      detailPdfContainer.classList.add('hidden');
+    }
   };
 
   const openDetail = (recipe) => {
@@ -468,6 +569,8 @@ document.addEventListener('DOMContentLoaded', () => {
     detailTitle.textContent = recipe.title;
     inlineEditTitle.value = recipe.title;
     if (inlineEditFoodType) inlineEditFoodType.value = recipe.foodType || '';
+    inlineEditTags = recipe.tags || [];
+    if (inlineEditTagsContainer) renderTagSelector(inlineEditTagsContainer, inlineEditTags, (t) => { inlineEditTags = t; });
     inlineEditIngredients.value = (recipe.ingredients || []).join('\n');
     inlineEditInstructions.value = (recipe.instructions || []).join('\n');
 
@@ -486,6 +589,14 @@ document.addEventListener('DOMContentLoaded', () => {
       detailUrlContainer.classList.remove('hidden');
     } else {
       detailUrlContainer.classList.add('hidden');
+    }
+
+    if (recipe.pdfPath) {
+      detailPdfLink.href = recipe.pdfPath;
+      detailPdfLink.download = (recipe.title || 'recipe').replace(/[^a-z0-9.-]/gi, '_') + '.pdf';
+      detailPdfContainer.classList.remove('hidden');
+    } else {
+      detailPdfContainer.classList.add('hidden');
     }
 
     if (recipe.rawText) {
@@ -577,6 +688,8 @@ document.addEventListener('DOMContentLoaded', () => {
       inlineEditTitle.value = currentDetail.title;
       if (inlineEditUrl) inlineEditUrl.value = currentDetail.url || '';
       if (inlineEditFoodType) inlineEditFoodType.value = currentDetail.foodType || '';
+      inlineEditTags = currentDetail.tags || [];
+      if (inlineEditTagsContainer) renderTagSelector(inlineEditTagsContainer, inlineEditTags, (t) => { inlineEditTags = t; });
       inlineEditIngredients.value = (currentDetail.ingredients || []).join('\n');
       inlineEditInstructions.value = (currentDetail.instructions || []).join('\n');
     }
@@ -599,6 +712,7 @@ document.addEventListener('DOMContentLoaded', () => {
       title: inlineEditTitle.value.trim(),
       url: inlineEditUrl && inlineEditUrl.value ? inlineEditUrl.value.trim() || null : currentDetail.url,
       foodType: inlineEditFoodType && inlineEditFoodType.value ? inlineEditFoodType.value.trim() : null,
+      tags: inlineEditTags || [],
       ingredients: inlineEditIngredients.value.split('\n').map(i => i.trim()).filter(i => i.length > 0),
       instructions: inlineEditInstructions.value.split('\n').map(i => i.trim()).filter(i => i.length > 0)
     };
@@ -806,6 +920,7 @@ document.addEventListener('DOMContentLoaded', () => {
       title: editTitle.value.trim(),
       type: editType.value,
       foodType: editFoodType && editFoodType.value ? editFoodType.value.trim() : null,
+      tags: editFormTags || [],
       rawText: editText.value.trim(),
       ingredients: editIngredients ? editIngredients.value.split('\n').map(i => i.trim()).filter(i => i.length > 0) : [],
       instructions: editInstructions.value.split('\n').map(i => i.trim()).filter(i => i.length > 0)
@@ -846,11 +961,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (cardFilter) cardFilter.addEventListener('change', renderCards);
   if (foodTypeFilter) foodTypeFilter.addEventListener('change', renderCards);
+  if (tagFilter) tagFilter.addEventListener('change', renderCards);
   if (typeFilter) typeFilter.addEventListener('change', renderCards);
 
   const openSettingsModal = () => {
     if (settingsModal) settingsModal.classList.remove('hidden');
     renderFoodTypesList();
+    renderTagsList();
   };
   const closeSettingsModal = () => {
     if (settingsModal) settingsModal.classList.add('hidden');
@@ -899,6 +1016,50 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   if (openSettingsBtn) openSettingsBtn.addEventListener('click', openSettingsModal);
   if (closeSettingsBtn) closeSettingsBtn.addEventListener('click', closeSettingsModal);
+  const renderTagsList = () => {
+    if (!tagsList) return;
+    tagsList.innerHTML = '';
+    allTags.forEach((t) => {
+      const li = document.createElement('li');
+      li.className = 'flex items-center justify-between gap-2 py-2 px-3 rounded-lg bg-slate-800/50';
+      li.innerHTML = `<span class="text-slate-200 font-medium">${t.name}</span><button type="button" class="tag-delete text-red-400 hover:text-red-300 text-sm font-medium" data-id="${t.id}">Delete</button>`;
+      li.querySelector('.tag-delete').addEventListener('click', async () => {
+        if (!window.confirm(`Remove tag "${t.name}"? Recipes and restaurants will keep it until you edit them.`)) return;
+        try {
+          const response = await fetch(`/api/tags/${t.id}`, { method: 'DELETE' });
+          if (response.ok) {
+            await fetchTags();
+            renderTagsList();
+            renderCards();
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      });
+      tagsList.appendChild(li);
+    });
+  };
+  if (addTagBtn && newTagInput) {
+    addTagBtn.addEventListener('click', async () => {
+      const name = newTagInput.value.trim();
+      if (!name) return;
+      try {
+        const response = await fetch('/api/tags', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        if (response.ok) {
+          newTagInput.value = '';
+          await fetchTags();
+          renderTagsList();
+          renderCards();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+  }
   if (addFoodTypeBtn && newFoodTypeInput) {
     addFoodTypeBtn.addEventListener('click', async () => {
       const name = newFoodTypeInput.value.trim();
@@ -949,14 +1110,14 @@ document.addEventListener('DOMContentLoaded', () => {
           const response = await fetch(`/api/restaurants/${currentRestaurant.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, orderingUrl, foodType, dateAdded: currentRestaurant.dateAdded })
+            body: JSON.stringify({ name, orderingUrl, foodType, tags: restaurantFormTags || [], dateAdded: currentRestaurant.dateAdded })
           });
           if (!response.ok) throw new Error('Update failed');
         } else {
           const response = await fetch('/api/restaurants', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, orderingUrl, foodType })
+            body: JSON.stringify({ name, orderingUrl, foodType, tags: restaurantFormTags || [] })
           });
           if (!response.ok) throw new Error('Create failed');
         }
@@ -986,6 +1147,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   fetchFoodTypes();
+  fetchTags();
   fetchRecipes();
   fetchRestaurants();
 });

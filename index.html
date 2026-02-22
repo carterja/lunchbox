@@ -71,15 +71,15 @@
           <!-- Upload Tab Content -->
           <div id="tab-upload-content" class="hidden space-y-4">
             <div class="space-y-2">
-              <label for="screenshot-input" class="block text-sm font-medium text-slate-300">Screenshot / Image</label>
+              <label for="screenshot-input" class="block text-sm font-medium text-slate-300">Image or PDF</label>
               <div class="border-2 border-dashed border-slate-700 rounded-xl p-8 text-center hover:border-indigo-400 transition-colors cursor-pointer group" onclick="document.getElementById('screenshot-input').click()">
-                <input type="file" id="screenshot-input" accept="image/*" class="hidden">
+                <input type="file" id="screenshot-input" accept="image/*,application/pdf" class="hidden">
                 <svg class="w-12 h-12 mx-auto text-slate-400 group-hover:text-indigo-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                <p class="mt-2 text-sm text-slate-400" id="file-name-display">Click to select, drag and drop, or paste image</p>
+                <p class="mt-2 text-sm text-slate-400" id="file-name-display">Click to select, drag and drop, or paste image/PDF</p>
               </div>
             </div>
             <button id="preview-upload-btn" class="w-full bg-indigo-500 hover:bg-indigo-400 text-white py-3 rounded-xl font-bold transition duration-200 shadow-md disabled:opacity-50">
-              Process Image (OCR)
+              Process Image / PDF
             </button>
           </div>
         </div>
@@ -105,6 +105,12 @@
                 <option value="">— None —</option>
                 <!-- Populated by JS -->
               </select>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-300">Tags</label>
+              <div id="edit-tags-container" class="flex flex-wrap gap-2 p-2 min-h-[2.5rem] bg-slate-950 border border-slate-700 rounded-xl">
+                <!-- Tag pills + add input populated by JS -->
+              </div>
             </div>
             <div class="space-y-2">
               <label for="edit-ingredients" class="block text-sm font-medium text-slate-300">Ingredients (one per line)</label>
@@ -164,6 +170,11 @@
             <option value="General">General</option>
             <option value="Scanned">Scanned</option>
           </select>
+          <label for="tag-filter" class="text-sm font-medium sr-only">Tag</label>
+          <select id="tag-filter" class="bg-slate-800 text-slate-200 text-sm rounded-lg px-3 py-2 border border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="">All tags</option>
+            <!-- Populated by JS -->
+          </select>
         </div>
       </div>
       <div id="card-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -204,6 +215,13 @@
               <a id="detail-url" href="#" target="_blank" class="text-indigo-400 hover:text-indigo-300 break-all flex items-center">
                 <span id="detail-url-text"></span>
                 <svg class="w-4 h-4 ml-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+              </a>
+            </div>
+            <div id="detail-pdf-container" class="hidden text-sm">
+              <h3 class="font-semibold text-slate-400 uppercase tracking-wider mb-1">PDF</h3>
+              <a id="detail-pdf-link" href="#" download class="text-indigo-400 hover:text-indigo-300 flex items-center gap-2">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Download PDF
               </a>
             </div>
 
@@ -247,6 +265,12 @@
               <select id="inline-edit-food-type" class="w-full p-3 bg-slate-950 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-100 text-sm">
                 <option value="">— None —</option>
               </select>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-xs font-semibold text-slate-400 uppercase">Tags</label>
+              <div id="inline-edit-tags-container" class="flex flex-wrap gap-2 p-2 min-h-[2.5rem] bg-slate-950 border border-slate-700 rounded-xl">
+                <!-- Tag pills populated by JS -->
+              </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="space-y-2">
@@ -333,6 +357,12 @@
             </select>
           </div>
           <div class="space-y-2">
+            <label class="block text-sm font-medium text-slate-300">Tags</label>
+            <div id="restaurant-tags-container" class="flex flex-wrap gap-2 p-2 min-h-[2.5rem] bg-slate-950 border border-slate-700 rounded-xl">
+              <!-- Tag pills populated by JS -->
+            </div>
+          </div>
+          <div class="space-y-2">
             <label for="restaurant-ordering-url" class="block text-sm font-medium text-slate-300">Ordering link (optional)</label>
             <div class="flex gap-2">
               <input type="url" id="restaurant-ordering-url" placeholder="https://..." class="flex-1 p-3 bg-slate-950 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-100">
@@ -359,24 +389,33 @@
       </div>
     </div>
 
-    <!-- Settings modal: manage food types -->
+    <!-- Settings modal: manage food types and tags -->
     <div id="settings-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
       <div class="bg-slate-900 rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-800">
         <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-800/50">
-          <h2 class="text-xl font-bold text-slate-100">Manage food types</h2>
+          <h2 class="text-xl font-bold text-slate-100">Settings</h2>
           <button id="close-settings-btn" class="text-slate-400 hover:text-slate-200 transition-colors">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
         </div>
-        <div class="p-6 space-y-4">
-          <p class="text-sm text-slate-400">Food types are used for recipes and to-go. Add or remove types below.</p>
-          <div class="flex gap-2">
-            <input type="text" id="new-food-type-input" placeholder="e.g. Korean" class="flex-1 p-3 bg-slate-950 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-100 text-sm">
-            <button id="add-food-type-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold text-sm transition-colors">Add</button>
+        <div class="p-6 space-y-6">
+          <div>
+            <h3 class="text-sm font-semibold text-slate-300 mb-2">Food types</h3>
+            <div class="flex gap-2 mb-2">
+              <input type="text" id="new-food-type-input" placeholder="e.g. Korean" class="flex-1 p-3 bg-slate-950 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-100 text-sm">
+              <button id="add-food-type-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold text-sm transition-colors">Add</button>
+            </div>
+            <ul id="food-types-list" class="space-y-2 max-h-48 overflow-y-auto"></ul>
           </div>
-          <ul id="food-types-list" class="space-y-2 max-h-64 overflow-y-auto">
-            <!-- Populated by JS -->
-          </ul>
+          <div>
+            <h3 class="text-sm font-semibold text-slate-300 mb-2">Tags</h3>
+            <p class="text-xs text-slate-400 mb-2">Assign tags to recipes and restaurants, then filter by them.</p>
+            <div class="flex gap-2 mb-2">
+              <input type="text" id="new-tag-input" placeholder="e.g. chicken, quick" class="flex-1 p-3 bg-slate-950 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 text-slate-100 text-sm">
+              <button id="add-tag-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold text-sm transition-colors">Add</button>
+            </div>
+            <ul id="tags-list" class="space-y-2 max-h-48 overflow-y-auto"></ul>
+          </div>
         </div>
       </div>
     </div>
