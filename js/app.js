@@ -367,36 +367,38 @@ document.addEventListener('DOMContentLoaded', () => {
       const domain = isRecipe ? getDomainFromUrl(item.url) : getDomainFromUrl(item.orderingUrl);
       const logo = logoUrl(domain);
       const typeBadge = isRecipe
-        ? (item.type === 'Scanned' ? '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-200 uppercase">Scanned</span>' : '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-200 uppercase">Recipe</span>')
+        ? (item.type === 'Scanned' ? '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-200 uppercase">Import</span>' : '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-200 uppercase">Recipe</span>')
         : '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-200 uppercase">To-Go</span>';
       const foodTypeBadge = item.foodType ? `<span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-600 text-slate-200">${item.foodType}</span>` : '';
       const tagBadges = (item.tags || []).slice(0, 3).map((t) => `<span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-indigo-500/30 text-indigo-200">${t}</span>`).join(' ');
-      const badge = [typeBadge, foodTypeBadge, tagBadges].filter(Boolean).join(' ');
+      const tagRow = tagBadges ? `<div class="flex items-center gap-2 flex-wrap mt-0.5">${tagBadges}</div>` : '';
       const title = isRecipe ? item.title : item.name;
       const hasAction = isRecipe ? !!item.url : !!(item.orderingUrl && item.orderingUrl.trim());
       const actionLabel = isRecipe
         ? (item.url ? 'View' : 'No link')
         : (item.orderingUrl && item.orderingUrl.trim() ? 'Order' : 'Add link');
       const actionBtn = `<span class="card-action-btn inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${hasAction ? 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30' : 'bg-slate-700/50 text-slate-500'}">${actionLabel}${hasAction ? linkIcon : ''}</span>`;
-      const dateStr = new Date(item.dateAdded).toLocaleDateString();
       const card = document.createElement('div');
-      card.className = 'bg-slate-900 rounded-xl border border-slate-800 overflow-hidden hover:border-slate-600 hover:shadow-md transition-all duration-200 cursor-pointer flex min-h-[88px]';
+      card.className = 'bg-slate-900 rounded-xl border border-slate-800 overflow-visible hover:border-slate-600 hover:shadow-md transition-all duration-200 cursor-pointer flex min-h-[104px] relative';
       card.innerHTML = `
-        <div class="flex gap-3 p-3 w-full min-w-0">
-          <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center overflow-hidden">
-            ${logo ? `<img src="${logo}" alt="" class="w-8 h-8 object-contain logo-img"><span class="hidden logo-fallback w-8 h-8 flex items-center justify-center text-slate-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></span>` : '<span class="text-slate-500 flex"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></span>'}
+        <div class="absolute -top-4 left-3 z-10">${typeBadge}</div>
+        <div class="flex gap-3 p-3 w-full min-w-0 flex-1">
+          <div class="flex-shrink-0 flex flex-col justify-between items-center w-12">
+            <div class="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center overflow-hidden">
+              ${logo ? `<img src="${logo}" alt="" class="w-8 h-8 object-contain logo-img"><span class="hidden logo-fallback w-8 h-8 flex items-center justify-center text-slate-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></span>` : '<span class="text-slate-500 flex"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></span>'}
+            </div>
+            <div class="mt-auto pt-1">${foodTypeBadge || ''}</div>
           </div>
           <div class="flex-1 min-w-0 flex flex-col justify-between">
             <div>
               <div class="flex items-start justify-between gap-2">
-                <h3 class="text-sm font-bold text-slate-100 truncate leading-tight">${title}</h3>
+                <h3 class="text-sm font-bold text-slate-100 leading-snug line-clamp-2 flex-1 min-w-0">${title}</h3>
                 ${isRecipe ? '' : '<button type="button" class="card-edit-btn flex-shrink-0 text-slate-500 hover:text-slate-300 text-xs font-medium">Edit</button>'}
               </div>
-              <div class="flex items-center gap-2 mt-0.5 flex-wrap">${badge}</div>
+              ${tagRow}
             </div>
-            <div class="flex items-end justify-between gap-2 mt-2">
-              <p class="text-slate-500 text-[10px]">${dateStr}</p>
-              <span class="card-action-btn-wrapper">${actionBtn}</span>
+            <div class="flex justify-end mt-2">
+              <span class="card-action-btn-wrapper flex-shrink-0">${actionBtn}</span>
             </div>
           </div>
         </div>

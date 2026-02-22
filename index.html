@@ -4,10 +4,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Lunch Box - Your Recipe Collection</title>
+  <title>LunchBox</title>
   <meta name="description" content="">
 
-  <meta property="og:title" content="Lunch Box">
+  <meta property="og:title" content="LunchBox">
   <meta property="og:type" content="">
   <meta property="og:url" content="">
   <meta property="og:image" content="">
@@ -25,7 +25,10 @@
 
   <header class="bg-indigo-900 text-white shadow-md">
     <div class="container mx-auto px-4 py-4 max-w-6xl flex justify-between items-center">
-      <h1 class="text-2xl font-bold tracking-tight">Lunch Box</h1>
+      <div class="flex items-center gap-3">
+        <img src="/icon.svg" alt="" class="w-9 h-9 flex-shrink-0" aria-hidden="true">
+        <h1 class="text-2xl font-bold tracking-tight">LunchBox</h1>
+      </div>
       <button id="open-settings-btn" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-indigo-800 transition-colors" title="Manage food types">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
       </button>
@@ -96,7 +99,7 @@
               <label for="edit-type" class="block text-sm font-medium text-slate-300">Type</label>
               <select id="edit-type" class="w-full p-3 border border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-slate-950 text-slate-100">
                 <option value="General">General</option>
-                <option value="Scanned">Scanned</option>
+                <option value="Scanned">Import</option>
               </select>
             </div>
             <div class="space-y-2">
@@ -168,7 +171,7 @@
           <select id="type-filter" class="bg-slate-800 text-slate-200 text-sm rounded-lg px-3 py-2 border border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 hidden">
             <option value="all">All Types</option>
             <option value="General">General</option>
-            <option value="Scanned">Scanned</option>
+            <option value="Scanned">Import</option>
           </select>
           <label for="tag-filter" class="text-sm font-medium sr-only">Tag</label>
           <select id="tag-filter" class="bg-slate-800 text-slate-200 text-sm rounded-lg px-3 py-2 border border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500">
@@ -177,7 +180,7 @@
           </select>
         </div>
       </div>
-      <div id="card-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div id="card-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 pt-4">
         <!-- Recipes and To-Go cards -->
       </div>
     </section>
