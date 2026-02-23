@@ -25,7 +25,6 @@ module.exports = merge(common, {
         { from: 'apple-touch-icon.png', to: 'apple-touch-icon.png' },
         { from: 'web-app-manifest-192x192.png', to: 'web-app-manifest-192x192.png' },
         { from: 'web-app-manifest-512x512.png', to: 'web-app-manifest-512x512.png' },
-        { from: 'web-app-manifest-1024x1024.png', to: 'web-app-manifest-1024x1024.png' },
         { from: 'robots.txt', to: 'robots.txt' },
         { from: '404.html', to: '404.html' },
         { from: 'site.webmanifest', to: 'site.webmanifest' },
