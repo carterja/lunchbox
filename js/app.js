@@ -46,6 +46,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const previewInstructionsContainer = document.getElementById('preview-instructions-container');
   const saveRecipeBtn = document.getElementById('save-recipe-btn');
 
+  const editThumbnailInput = document.getElementById('edit-thumbnail-input');
+  const editThumbnailPreview = document.getElementById('edit-thumbnail-preview');
+  const editThumbnailPreviewWrap = document.getElementById('edit-thumbnail-preview-wrap');
+  const editThumbnailEmptyWrap = document.getElementById('edit-thumbnail-empty-wrap');
+  const editThumbnailRemoveBtn = document.getElementById('edit-thumbnail-remove-btn');
+  const editThumbnailUrlInput = document.getElementById('edit-thumbnail-url');
+  const editThumbnailUrlBtn = document.getElementById('edit-thumbnail-url-btn');
+
   // Detail Modal Elements
   const detailModal = document.getElementById('detail-modal');
   const closeDetailBtn = document.getElementById('close-detail-btn');
@@ -147,6 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let allFoodTypes = [];
   let allTags = [];
   let editFormTags = [];
+  let editFormScreenshot = null;
   let restaurantFormTags = [];
   let inlineEditTags = [];
 
@@ -189,6 +198,8 @@ document.addEventListener('DOMContentLoaded', () => {
     currentPreview = null;
     currentEditId = null;
     isEditing = false;
+    editFormScreenshot = null;
+    if (editThumbnailUrlInput) editThumbnailUrlInput.value = '';
     saveRecipeBtn.textContent = 'Save Recipe';
     recipeModalTitle.textContent = 'Add New Recipe';
     showTab('url');
@@ -251,8 +262,25 @@ document.addEventListener('DOMContentLoaded', () => {
     editFormTags = data.tags || [];
     if (editTagsContainer) renderTagSelector(editTagsContainer, editFormTags, (t) => { editFormTags = t; }, editTagsAdd);
 
+    editFormScreenshot = data.screenshot || null;
+    if (editThumbnailUrlInput) editThumbnailUrlInput.value = '';
+    syncEditThumbnailUI();
+
     modalStep1.classList.add('hidden');
     modalStep2.classList.remove('hidden');
+  };
+
+  const syncEditThumbnailUI = () => {
+    if (!editThumbnailPreview || !editThumbnailPreviewWrap || !editThumbnailEmptyWrap) return;
+    if (editFormScreenshot) {
+      editThumbnailPreview.src = editFormScreenshot;
+      editThumbnailPreviewWrap.classList.remove('hidden');
+      editThumbnailEmptyWrap.classList.add('hidden');
+    } else {
+      editThumbnailPreview.src = '';
+      editThumbnailPreviewWrap.classList.add('hidden');
+      editThumbnailEmptyWrap.classList.remove('hidden');
+    }
   };
 
   const closeDetail = () => {
@@ -393,6 +421,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return (t.startsWith('https://') || t.startsWith('http://') || t.startsWith('/')) ? t : null;
   };
 
+  const getRecipeInitials = (title) => {
+    if (!title || typeof title !== 'string') return '?';
+    const words = title.trim().split(/\s+/).filter(Boolean);
+    if (words.length === 0) return '?';
+    if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+    return (words[0][0] + words[1][0]).toUpperCase();
+  };
+
   const fetchRestaurants = async () => {
     try {
       const response = await fetch('/api/restaurants');
@@ -432,7 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
       el.className = 'flex flex-col items-center gap-2 w-24 flex-shrink-0 group cursor-pointer';
       el.innerHTML = `
         <div class="relative">
-          <div class="w-20 h-20 rounded-2xl bg-elevated flex items-center justify-center overflow-hidden border-2 border-white/10 group-hover:border-violet-500/50 transition-colors shadow-lg">
+          <div class="w-20 h-20 rounded-2xl bg-icon-bg togo-icon-wrap flex items-center justify-center overflow-hidden border-2 border-white/10 group-hover:border-violet-500/50 transition-colors shadow-lg">
             ${iconSrc ? `<img src="${iconSrc}" alt="" class="w-fit-content h-fit-content p-[9px] object-contain togo-icon-img">` : '<span class="text-text-muted"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></span>'}
           </div>
           <button type="button" class="togo-edit-btn absolute rounded-lg bg-elevated/90 border border-white/10 text-text-muted opacity-70 flex items-center justify-center shadow transition-all hover:opacity-100 hover:text-cyan-400 hover:border-violet-500/50 group-hover:opacity-100" style="width:25px;height:25px;top:-8px;right:-8px" title="Edit">${editIconSvg}</button>
@@ -520,7 +556,11 @@ document.addEventListener('DOMContentLoaded', () => {
     items.forEach((item) => {
       const isRecipe = item._type === 'recipe';
       const domain = isRecipe ? getDomainFromUrl(item.url) : getDomainFromUrl(item.mainUrl || item.orderingUrl);
-      const logo = isRecipe ? logoUrl(domain) : (safeImageUrl(item.iconUrl) || logoUrl(domain));
+      const thumbnailUrl = isRecipe ? safeImageUrl(item.screenshot) : null;
+      const recipeInitials = isRecipe ? getRecipeInitials(item.title) : null;
+      const logo = isRecipe ? (thumbnailUrl || logoUrl(domain)) : (safeImageUrl(item.iconUrl) || logoUrl(domain));
+      const isRecipeWithThumb = isRecipe && thumbnailUrl;
+      const isRecipeNoThumb = isRecipe && !thumbnailUrl;
       const typeBadge = isRecipe
         ? (item.type === 'Scanned' ? '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-200 uppercase">Import</span>' : '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-200 uppercase">Recipe</span>')
         : '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-200 uppercase">To-Go</span>';
@@ -540,8 +580,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="absolute -top-4 left-3 z-10">${typeBadge}</div>
         <div class="flex gap-3 p-3 w-full min-w-0 flex-1">
           <div class="flex-shrink-0 flex flex-col justify-between items-center w-12">
-            <div class="w-12 h-12 rounded-lg bg-elevated flex items-center justify-center overflow-hidden">
-              ${logo ? `<img src="${logo}" alt="" class="w-8 h-8 object-contain logo-img"><span class="hidden logo-fallback w-8 h-8 flex items-center justify-center text-text-muted"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></span>` : '<span class="text-text-muted flex"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></span>'}
+            <div class="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden ${isRecipe ? 'bg-elevated' : 'bg-icon-bg card-logo-togo'}">
+              ${isRecipeWithThumb ? `<img src="${escapeHtml(thumbnailUrl)}" alt="" class="w-full h-full object-cover logo-img"><span class="hidden logo-fallback w-full h-full flex items-center justify-center text-xs font-bold text-text-muted bg-elevated">${escapeHtml(recipeInitials)}</span>` : isRecipeNoThumb ? `<span class="recipe-initials w-full h-full flex items-center justify-center text-sm font-bold text-text-muted">${escapeHtml(recipeInitials)}</span>` : logo ? `<img src="${logo}" alt="" class="w-8 h-8 object-contain logo-img"><span class="hidden logo-fallback w-8 h-8 flex items-center justify-center text-text-muted"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></span>` : '<span class="text-text-muted flex"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></span>'}
             </div>
             <div class="mt-auto pt-1">${foodTypeBadge || ''}</div>
           </div>
@@ -1396,6 +1436,7 @@ document.addEventListener('DOMContentLoaded', () => {
       type: editType.value,
       foodType: editFoodType && editFoodType.value ? editFoodType.value.trim() : null,
       tags: editFormTags || [],
+      screenshot: editFormScreenshot ?? currentPreview?.screenshot ?? null,
       rawText: editText.value.trim(),
       ingredients: editIngredients ? editIngredients.value.split('\n').map(i => i.trim()).filter(i => i.length > 0) : [],
       instructions: editInstructions.value.split('\n').map(i => i.trim()).filter(i => i.length > 0)
@@ -1423,6 +1464,48 @@ document.addEventListener('DOMContentLoaded', () => {
       saveRecipeBtn.textContent = 'Save Recipe';
     }
   });
+
+  if (editThumbnailInput) {
+    editThumbnailInput.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      e.target.value = '';
+      if (!file || !file.type.startsWith('image/')) return;
+      const formData = new FormData();
+      formData.append('image', file);
+      try {
+        const response = await fetch('/api/recipes/upload-image', { method: 'POST', body: formData });
+        const data = await response.json();
+        if (!response.ok) {
+          alert(data.error || 'Upload failed');
+          return;
+        }
+        editFormScreenshot = data.path;
+        syncEditThumbnailUI();
+      } catch (err) {
+        console.error(err);
+        alert('Failed to upload image');
+      }
+    });
+  }
+  if (editThumbnailRemoveBtn) {
+    editThumbnailRemoveBtn.addEventListener('click', () => {
+      editFormScreenshot = null;
+      syncEditThumbnailUI();
+    });
+  }
+  if (editThumbnailUrlBtn && editThumbnailUrlInput) {
+    editThumbnailUrlBtn.addEventListener('click', () => {
+      const url = (editThumbnailUrlInput.value || '').trim();
+      if (!url) return;
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        alert('Please enter a valid URL (e.g. https://...)');
+        return;
+      }
+      editFormScreenshot = url;
+      editThumbnailUrlInput.value = '';
+      syncEditThumbnailUI();
+    });
+  }
 
   const fetchRecipes = async () => {
     try {

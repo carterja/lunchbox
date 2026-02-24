@@ -11,6 +11,7 @@ module.exports = {
         page: '#0B1220',
         card: '#111827',
         elevated: '#1F2937',
+        'icon-bg': '#E5E7EB',
         'text-primary': '#FFFFFF',
         'text-secondary': 'rgba(255,255,255,0.7)',
         'text-muted': 'rgba(255,255,255,0.5)',

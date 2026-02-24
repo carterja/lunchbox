@@ -300,6 +300,21 @@ const fetchWithPlaywright = async (url) => {
   }
 };
 
+/** Fetch raw HTML with Playwright (bypasses many bot blocks). */
+const fetchHtmlWithPlaywright = async (url) => {
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage({
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'
+  });
+  try {
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForTimeout(1500);
+    return await page.content();
+  } finally {
+    await browser.close();
+  }
+};
+
 const normalizeInstructions = (instructions) => {
   if (!Array.isArray(instructions)) return [];
   const normalized = instructions.flatMap((step) => {
@@ -437,16 +452,9 @@ app.get('/api/site-images', async (req, res) => {
   if (!isUrlSafeForFetch(pageUrl)) {
     return res.status(400).json({ error: 'URL not allowed' });
   }
-  try {
-    const response = await axios.get(pageUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-      },
-      timeout: 10000,
-      validateStatus: (s) => s >= 200 && s < 400
-    });
-    const base = new URL(pageUrl);
+
+  const extractImagesFromHtml = (html, baseUrl) => {
+    const base = new URL(baseUrl);
     const resolve = (href) => {
       if (!href || !href.trim()) return null;
       try {
@@ -455,8 +463,9 @@ app.get('/api/site-images', async (req, res) => {
         return null;
       }
     };
-    const $ = cheerio.load(response.data);
+    const $ = cheerio.load(html);
     const seen = new Set();
+    const images = [];
     const add = (url, type) => {
       const u = resolve(url);
       if (u && !seen.has(u)) {
@@ -464,7 +473,6 @@ app.get('/api/site-images', async (req, res) => {
         images.push({ url: u, type });
       }
     };
-    const images = [];
     $('meta[property="og:image"]').each((_, el) => add($(el).attr('content'), 'og'));
     $('meta[name="twitter:image"]').each((_, el) => add($(el).attr('content'), 'twitter'));
     $('link[rel*="icon"]').each((_, el) => add($(el).attr('href'), 'icon'));
@@ -472,6 +480,44 @@ app.get('/api/site-images', async (req, res) => {
       if (images.length >= 25) return false;
       add($(el).attr('src'), 'img');
     });
+    return images;
+  };
+
+  try {
+    let html = null;
+    let response;
+    try {
+      response = await axios.get(pageUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9'
+        },
+        timeout: 10000,
+        validateStatus: (s) => s >= 200 && s < 400
+      });
+      html = response.data;
+    } catch (axiosErr) {
+      const status = axiosErr.response && axiosErr.response.status;
+      if (status === 403 || status === 429) {
+        console.log(`site-images: ${pageUrl} returned ${status}, trying Playwright`);
+        try {
+          html = await fetchHtmlWithPlaywright(pageUrl);
+        } catch (pwErr) {
+          console.error('site-images Playwright fallback failed:', pwErr.message);
+          return res.status(403).json({
+            error: 'This site blocked the request. You can paste an image URL above or upload a photo instead.'
+          });
+        }
+      } else {
+        throw axiosErr;
+      }
+    }
+
+    if (typeof html !== 'string') {
+      return res.status(500).json({ error: 'Could not fetch page' });
+    }
+    const images = extractImagesFromHtml(html, pageUrl);
     res.json({ images });
   } catch (err) {
     console.error('site-images error:', err.message);
