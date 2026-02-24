@@ -471,6 +471,25 @@
             <p id="restaurant-icon-picker-hint" class="text-xs text-text-muted">Enter main site above, then click "Fetch images from site" to pick an icon.</p>
           </div>
           <div class="space-y-2">
+            <label class="text-sm font-medium text-text-secondary">Logo background</label>
+            <p class="text-xs text-text-muted">Light/dark presets or pick a custom color. Preview updates as you change it.</p>
+            <div id="restaurant-logo-bg-preview" class="w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-white/20 flex-shrink-0 shadow-inner" style="background-color: #E5E7EB" title="Preview">
+              <!-- Preview: background + icon updated by JS -->
+              <img id="restaurant-logo-bg-preview-img" src="" alt="" class="w-[62px] h-[62px] object-contain hidden">
+              <span id="restaurant-logo-bg-preview-fallback" class="text-text-muted"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></span>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <div class="flex rounded-xl border border-white/10 overflow-hidden bg-elevated/50" role="group" aria-label="Logo background preset">
+                <button type="button" id="restaurant-logo-bg-light-btn" class="restaurant-logo-bg-toggle flex-1 px-3 py-2 text-sm font-medium transition-colors" data-value="light">Light</button>
+                <button type="button" id="restaurant-logo-bg-dark-btn" class="restaurant-logo-bg-toggle flex-1 px-3 py-2 text-sm font-medium transition-colors" data-value="dark">Dark</button>
+              </div>
+              <div class="flex items-center gap-2">
+                <label for="restaurant-logo-bg-color" class="text-sm text-text-muted whitespace-nowrap">Custom</label>
+                <input type="color" id="restaurant-logo-bg-color" value="#E5E7EB" class="w-10 h-10 rounded-lg cursor-pointer border border-white/20 bg-elevated" title="Pick a color">
+              </div>
+            </div>
+          </div>
+          <div class="space-y-2">
             <label for="restaurant-food-type" class="block text-sm font-medium text-text-secondary">Food type</label>
             <select id="restaurant-food-type" class="input-dark w-full p-3">
               <option value="">— None —</option>

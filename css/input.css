@@ -147,4 +147,8 @@
   .togo-icon-wrap .text-text-muted {
     color: #6B7280;
   }
+  .card-logo-togo-dark-bg .logo-fallback,
+  .card-logo-togo-dark-bg > span.text-text-muted {
+    color: rgba(255, 255, 255, 0.7);
+  }
 }

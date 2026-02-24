@@ -132,6 +132,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const restaurantSearchLinkBtn = document.getElementById('restaurant-search-link-btn');
   const restaurantFetchIconsBtn = document.getElementById('restaurant-fetch-icons-btn');
   const restaurantIconPicker = document.getElementById('restaurant-icon-picker');
+  const restaurantLogoBgLightBtn = document.getElementById('restaurant-logo-bg-light-btn');
+  const restaurantLogoBgDarkBtn = document.getElementById('restaurant-logo-bg-dark-btn');
+  const restaurantLogoBgColorInput = document.getElementById('restaurant-logo-bg-color');
+  const restaurantLogoBgPreview = document.getElementById('restaurant-logo-bg-preview');
+  const restaurantLogoBgPreviewImg = document.getElementById('restaurant-logo-bg-preview-img');
+  const restaurantLogoBgPreviewFallback = document.getElementById('restaurant-logo-bg-preview-fallback');
   const restaurantDeleteBtn = document.getElementById('restaurant-delete-btn');
   const restaurantCancelBtn = document.getElementById('restaurant-cancel-btn');
   const restaurantSaveBtn = document.getElementById('restaurant-save-btn');
@@ -143,6 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const togoAppIconsRow = document.getElementById('togo-app-icons-row');
   let layoutMode = 'appIcons';
   let restaurantFormIconUrl = null;
+  let restaurantFormIconBg = 'light';
 
   let allRecipes = [];
   let currentPreview = null;
@@ -429,6 +436,22 @@ document.addEventListener('DOMContentLoaded', () => {
     return (words[0][0] + words[1][0]).toUpperCase();
   };
 
+  const ICON_BG_LIGHT_HEX = '#E5E7EB';
+  const ICON_BG_DARK_HEX = '#1F2937';
+  const getIconBgResolved = (iconBg) => {
+    const v = iconBg == null || iconBg === '' ? 'light' : String(iconBg).trim();
+    if (v === 'dark') return { bgColor: ICON_BG_DARK_HEX, darkText: false };
+    if (v === 'light') return { bgColor: ICON_BG_LIGHT_HEX, darkText: true };
+    if (/^#[0-9A-Fa-f]{6}$/.test(v)) {
+      const r = parseInt(v.slice(1, 3), 16) / 255;
+      const g = parseInt(v.slice(3, 5), 16) / 255;
+      const b = parseInt(v.slice(5, 7), 16) / 255;
+      const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+      return { bgColor: v, darkText: luminance > 0.5 };
+    }
+    return { bgColor: ICON_BG_LIGHT_HEX, darkText: true };
+  };
+
   const fetchRestaurants = async () => {
     try {
       const response = await fetch('/api/restaurants');
@@ -464,12 +487,14 @@ document.addEventListener('DOMContentLoaded', () => {
     list.forEach((item) => {
       const iconSrc = safeImageUrl(item.iconUrl) || logoUrl(getDomainFromUrl(item.mainUrl || item.orderingUrl));
       const hasOrder = item.orderingUrl && item.orderingUrl.trim();
+      const { bgColor, darkText } = getIconBgResolved(item.iconBg);
+      const iconWrapClass = 'w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-white/10 group-hover:border-violet-500/50 transition-colors shadow-lg' + (darkText ? ' togo-icon-wrap' : '');
       const el = document.createElement('div');
       el.className = 'flex flex-col items-center gap-2 w-24 flex-shrink-0 group cursor-pointer';
       el.innerHTML = `
         <div class="relative">
-          <div class="w-20 h-20 rounded-2xl bg-icon-bg togo-icon-wrap flex items-center justify-center overflow-hidden border-2 border-white/10 group-hover:border-violet-500/50 transition-colors shadow-lg">
-            ${iconSrc ? `<img src="${iconSrc}" alt="" class="w-fit-content h-fit-content p-[9px] object-contain togo-icon-img">` : '<span class="text-text-muted"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></span>'}
+          <div class="${iconWrapClass}" style="background-color: ${escapeHtml(bgColor)}">
+            ${iconSrc ? `<img src="${iconSrc}" alt="" class="w-fit-content h-fit-content p-[9px] object-contain togo-icon-img">` : `<span class="text-[10px] font-medium" style="color: ${darkText ? '#6B7280' : 'rgba(255,255,255,0.7)'}"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></span>`}
           </div>
           <button type="button" class="togo-edit-btn absolute rounded-lg bg-elevated/90 border border-white/10 text-text-muted opacity-70 flex items-center justify-center shadow transition-all hover:opacity-100 hover:text-cyan-400 hover:border-violet-500/50 group-hover:opacity-100" style="width:25px;height:25px;top:-8px;right:-8px" title="Edit">${editIconSvg}</button>
         </div>
@@ -574,13 +599,16 @@ document.addEventListener('DOMContentLoaded', () => {
         : (item.orderingUrl && item.orderingUrl.trim() ? 'Order' : 'Add link');
       const showLinkIcon = isRecipe ? !!item.url : !!(item.orderingUrl && item.orderingUrl.trim());
       const actionBtn = `<span class="card-action-btn inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${hasAction ? 'text-cyan-400 hover:opacity-90' : 'text-text-muted'}">${actionLabel}${showLinkIcon ? linkIcon : ''}</span>`;
+      const iconBgResolved = !isRecipe ? getIconBgResolved(item.iconBg) : null;
+      const logoContainerClass = isRecipe ? 'bg-elevated' : (iconBgResolved.darkText ? 'card-logo-togo' : 'card-logo-togo-dark-bg');
+      const logoContainerStyle = !isRecipe ? ` style="background-color: ${escapeHtml(iconBgResolved.bgColor)}"` : '';
       const card = document.createElement('div');
       card.className = 'card-modern min-h-[104px] relative';
       card.innerHTML = `
         <div class="absolute -top-4 left-3 z-10">${typeBadge}</div>
         <div class="flex gap-3 p-3 w-full min-w-0 flex-1">
           <div class="flex-shrink-0 flex flex-col justify-between items-center w-12">
-            <div class="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden ${isRecipe ? 'bg-elevated' : 'bg-icon-bg card-logo-togo'}">
+            <div class="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden ${logoContainerClass}"${logoContainerStyle}>
               ${isRecipeWithThumb ? `<img src="${escapeHtml(thumbnailUrl)}" alt="" class="w-full h-full object-cover logo-img"><span class="hidden logo-fallback w-full h-full flex items-center justify-center text-xs font-bold text-text-muted bg-elevated">${escapeHtml(recipeInitials)}</span>` : isRecipeNoThumb ? `<span class="recipe-initials w-full h-full flex items-center justify-center text-sm font-bold text-text-muted">${escapeHtml(recipeInitials)}</span>` : logo ? `<img src="${logo}" alt="" class="w-8 h-8 object-contain logo-img"><span class="hidden logo-fallback w-8 h-8 flex items-center justify-center text-text-muted"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></span>` : '<span class="text-text-muted flex"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></span>'}
             </div>
             <div class="mt-auto pt-1">${foodTypeBadge || ''}</div>
@@ -653,6 +681,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const openRestaurantModal = (restaurant = null) => {
     currentRestaurant = restaurant;
     restaurantFormIconUrl = restaurant?.iconUrl || null;
+    restaurantFormIconBg = (restaurant != null && restaurant.iconBg != null && restaurant.iconBg !== '') ? String(restaurant.iconBg) : 'light';
     if (restaurant) {
       restaurantModalTitle.textContent = 'Edit Restaurant';
       restaurantNameInput.value = restaurant.name;
@@ -689,13 +718,55 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     if (restaurantTagsContainer) renderTagSelector(restaurantTagsContainer, restaurantFormTags, (t) => { restaurantFormTags = t; }, restaurantTagsAdd);
+    syncRestaurantLogoBgToggle();
+    syncRestaurantLogoBgPreview();
+    syncRestaurantLogoBgPreview();
     restaurantModal.classList.remove('hidden');
+  };
+
+  const syncRestaurantLogoBgToggle = () => {
+    if (restaurantLogoBgLightBtn && restaurantLogoBgDarkBtn) {
+      const isLight = restaurantFormIconBg === 'light';
+      const isDark = restaurantFormIconBg === 'dark';
+      const isCustom = !isLight && !isDark && restaurantFormIconBg.startsWith('#');
+      restaurantLogoBgLightBtn.classList.toggle('active-gradient', isLight);
+      restaurantLogoBgLightBtn.classList.toggle('bg-elevated', !isLight);
+      restaurantLogoBgLightBtn.classList.toggle('text-text-muted', !isLight);
+      restaurantLogoBgDarkBtn.classList.toggle('active-gradient', isDark);
+      restaurantLogoBgDarkBtn.classList.toggle('bg-elevated', !isDark);
+      restaurantLogoBgDarkBtn.classList.toggle('text-text-muted', !isDark);
+      if (restaurantLogoBgColorInput) restaurantLogoBgColorInput.value = isCustom ? restaurantFormIconBg : ICON_BG_LIGHT_HEX;
+    }
+  };
+
+  const syncRestaurantLogoBgPreview = () => {
+    if (!restaurantLogoBgPreview) return;
+    const { bgColor, darkText } = getIconBgResolved(restaurantFormIconBg);
+    restaurantLogoBgPreview.style.backgroundColor = bgColor;
+    if (restaurantLogoBgPreviewImg && restaurantLogoBgPreviewFallback) {
+      if (restaurantFormIconUrl) {
+        restaurantLogoBgPreviewImg.src = restaurantFormIconUrl;
+        restaurantLogoBgPreviewImg.classList.remove('hidden');
+        restaurantLogoBgPreviewFallback.classList.add('hidden');
+        restaurantLogoBgPreviewImg.onerror = () => {
+          restaurantLogoBgPreviewImg.classList.add('hidden');
+          restaurantLogoBgPreviewFallback.classList.remove('hidden');
+          restaurantLogoBgPreviewFallback.style.color = darkText ? '#6B7280' : 'rgba(255,255,255,0.7)';
+        };
+      } else {
+        restaurantLogoBgPreviewImg.src = '';
+        restaurantLogoBgPreviewImg.classList.add('hidden');
+        restaurantLogoBgPreviewFallback.classList.remove('hidden');
+        restaurantLogoBgPreviewFallback.style.color = darkText ? '#6B7280' : 'rgba(255,255,255,0.7)';
+      }
+    }
   };
 
   const closeRestaurantModal = () => {
     restaurantModal.classList.add('hidden');
     currentRestaurant = null;
     restaurantFormIconUrl = null;
+    restaurantFormIconBg = 'light';
     restaurantNameInput.value = '';
     if (restaurantMainUrlInput) restaurantMainUrlInput.value = '';
     restaurantOrderingUrlInput.value = '';
@@ -1714,6 +1785,27 @@ document.addEventListener('DOMContentLoaded', () => {
   if (restaurantCancelBtn) {
     restaurantCancelBtn.addEventListener('click', closeRestaurantModal);
   }
+  if (restaurantLogoBgLightBtn) {
+    restaurantLogoBgLightBtn.addEventListener('click', () => {
+      restaurantFormIconBg = 'light';
+      syncRestaurantLogoBgToggle();
+      syncRestaurantLogoBgPreview();
+    });
+  }
+  if (restaurantLogoBgDarkBtn) {
+    restaurantLogoBgDarkBtn.addEventListener('click', () => {
+      restaurantFormIconBg = 'dark';
+      syncRestaurantLogoBgToggle();
+      syncRestaurantLogoBgPreview();
+    });
+  }
+  if (restaurantLogoBgColorInput) {
+    restaurantLogoBgColorInput.addEventListener('input', () => {
+      restaurantFormIconBg = restaurantLogoBgColorInput.value;
+      syncRestaurantLogoBgToggle();
+      syncRestaurantLogoBgPreview();
+    });
+  }
   if (restaurantSaveBtn) {
     restaurantSaveBtn.addEventListener('click', async () => {
       const name = restaurantNameInput.value.trim();
@@ -1721,6 +1813,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const mainUrl = restaurantMainUrlInput ? restaurantMainUrlInput.value.trim() || null : null;
       const orderingUrl = restaurantOrderingUrlInput.value.trim() || null;
       const iconUrl = restaurantFormIconUrl || null;
+      const iconBg = restaurantFormIconBg;
       const foodType = restaurantFoodType && restaurantFoodType.value ? restaurantFoodType.value.trim() : null;
       restaurantSaveBtn.disabled = true;
       try {
@@ -1728,14 +1821,14 @@ document.addEventListener('DOMContentLoaded', () => {
           const response = await fetch(`/api/restaurants/${currentRestaurant.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, mainUrl, orderingUrl, iconUrl, foodType, tags: restaurantFormTags || [], dateAdded: currentRestaurant.dateAdded })
+            body: JSON.stringify({ name, mainUrl, orderingUrl, iconUrl, iconBg, foodType, tags: restaurantFormTags || [], dateAdded: currentRestaurant.dateAdded })
           });
           if (!response.ok) throw new Error('Update failed');
         } else {
           const response = await fetch('/api/restaurants', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, mainUrl, orderingUrl, iconUrl, foodType, tags: restaurantFormTags || [] })
+            body: JSON.stringify({ name, mainUrl, orderingUrl, iconUrl, iconBg, foodType, tags: restaurantFormTags || [] })
           });
           if (!response.ok) throw new Error('Create failed');
         }
@@ -1783,6 +1876,7 @@ document.addEventListener('DOMContentLoaded', () => {
             restaurantFormIconUrl = imgUrl;
             restaurantIconPicker.querySelectorAll('button').forEach((b) => b.classList.remove('border-cyan-400', 'ring-2', 'ring-cyan-400/30'));
             btn.classList.add('border-cyan-400', 'ring-2', 'ring-cyan-400/30');
+            syncRestaurantLogoBgPreview();
           });
           restaurantIconPicker.appendChild(btn);
         });

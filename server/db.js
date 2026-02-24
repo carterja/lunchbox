@@ -47,6 +47,11 @@ try { db.exec('ALTER TABLE recipes ADD COLUMN tags TEXT'); } catch (_) {}
 try { db.exec('ALTER TABLE restaurants ADD COLUMN tags TEXT'); } catch (_) {}
 try { db.exec('ALTER TABLE restaurants ADD COLUMN main_url TEXT'); } catch (_) {}
 try { db.exec('ALTER TABLE restaurants ADD COLUMN icon_url TEXT'); } catch (_) {}
+try { db.exec('ALTER TABLE restaurants ADD COLUMN icon_bg_light INTEGER DEFAULT 1'); } catch (_) {}
+try { db.exec('ALTER TABLE restaurants ADD COLUMN icon_bg TEXT'); } catch (_) {}
+try {
+  db.exec(`UPDATE restaurants SET icon_bg = CASE WHEN COALESCE(icon_bg_light, 1) = 0 THEN 'dark' ELSE 'light' END WHERE icon_bg IS NULL OR icon_bg = ''`);
+} catch (_) {}
 db.exec(`
   CREATE TABLE IF NOT EXISTS tags (
     id TEXT PRIMARY KEY,
@@ -230,26 +235,32 @@ const removeRecipes = (ids) => {
 // Restaurants
 const selectAllRestaurants = db.prepare('SELECT * FROM restaurants ORDER BY date_added DESC');
 const insertRestaurant = db.prepare(`
-  INSERT INTO restaurants (id, name, ordering_url, main_url, icon_url, food_type, tags, date_added)
-  VALUES (@id, @name, @ordering_url, @main_url, @icon_url, @food_type, @tags, @date_added)
+  INSERT INTO restaurants (id, name, ordering_url, main_url, icon_url, icon_bg_light, icon_bg, food_type, tags, date_added)
+  VALUES (@id, @name, @ordering_url, @main_url, @icon_url, @icon_bg_light, @icon_bg, @food_type, @tags, @date_added)
 `);
 const deleteRestaurantById = db.prepare('DELETE FROM restaurants WHERE id = ?');
 const updateRestaurantById = db.prepare(`
   UPDATE restaurants
-  SET name = @name, ordering_url = @ordering_url, main_url = @main_url, icon_url = @icon_url, food_type = @food_type, tags = @tags
+  SET name = @name, ordering_url = @ordering_url, main_url = @main_url, icon_url = @icon_url, icon_bg_light = @icon_bg_light, icon_bg = @icon_bg, food_type = @food_type, tags = @tags
   WHERE id = @id
 `);
 
-const restaurantToRow = (r) => ({
-  id: r.id,
-  name: r.name,
-  ordering_url: r.orderingUrl || null,
-  main_url: r.mainUrl || null,
-  icon_url: r.iconUrl || null,
-  food_type: r.foodType || null,
-  tags: r.tags != null ? JSON.stringify(r.tags) : null,
-  date_added: r.dateAdded
-});
+const restaurantToRow = (r) => {
+  const iconBg = r.iconBg != null && r.iconBg !== '' ? String(r.iconBg) : (r.iconBgLight === false || r.iconBgLight === 0 ? 'dark' : 'light');
+  const iconBgLight = iconBg === 'dark' ? 0 : 1;
+  return {
+    id: r.id,
+    name: r.name,
+    ordering_url: r.orderingUrl || null,
+    main_url: r.mainUrl || null,
+    icon_url: r.iconUrl || null,
+    icon_bg_light: iconBgLight,
+    icon_bg: iconBg,
+    food_type: r.foodType || null,
+    tags: r.tags != null ? JSON.stringify(r.tags) : null,
+    date_added: r.dateAdded
+  };
+};
 
 const restaurantFromRow = (row) => ({
   id: row.id,
@@ -257,6 +268,8 @@ const restaurantFromRow = (row) => ({
   orderingUrl: row.ordering_url ?? null,
   mainUrl: row.main_url ?? null,
   iconUrl: row.icon_url ?? null,
+  iconBgLight: row.icon_bg_light === undefined || row.icon_bg_light === null ? true : !!row.icon_bg_light,
+  iconBg: row.icon_bg != null && row.icon_bg !== '' ? row.icon_bg : (row.icon_bg_light === 0 ? 'dark' : 'light'),
   foodType: row.food_type || null,
   tags: row.tags ? JSON.parse(row.tags) : [],
   dateAdded: row.date_added

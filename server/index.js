@@ -526,18 +526,20 @@ app.get('/api/site-images', async (req, res) => {
 });
 
 app.post('/api/restaurants', (req, res) => {
-  const { name, orderingUrl, mainUrl, iconUrl, foodType, tags } = req.body;
+  const { name, orderingUrl, mainUrl, iconUrl, iconBgLight, iconBg, foodType, tags } = req.body;
   if (!name || !name.trim()) {
     return res.status(400).json({ error: 'Restaurant name is required' });
   }
   const tagNames = normalizeTags(tags || []);
   tagNames.forEach(ensureTag);
+  const resolvedIconBg = iconBg != null && iconBg !== '' ? String(iconBg) : (iconBgLight === false || iconBgLight === 0 ? 'dark' : 'light');
   const restaurant = {
     id: uuidv4(),
     name: name.trim(),
     orderingUrl: orderingUrl && orderingUrl.trim() ? orderingUrl.trim() : null,
     mainUrl: mainUrl && mainUrl.trim() ? mainUrl.trim() : null,
     iconUrl: iconUrl && iconUrl.trim() ? iconUrl.trim() : null,
+    iconBg: resolvedIconBg,
     foodType: foodType && foodType.trim() ? foodType.trim() : null,
     tags: tagNames,
     dateAdded: new Date().toISOString()
@@ -548,17 +550,19 @@ app.post('/api/restaurants', (req, res) => {
 
 app.put('/api/restaurants/:id', (req, res) => {
   const { id } = req.params;
-  const { name, orderingUrl, mainUrl, iconUrl, foodType, tags } = req.body;
+  const { name, orderingUrl, mainUrl, iconUrl, iconBgLight, iconBg, foodType, tags } = req.body;
   if (!id) return res.status(400).json({ error: 'Restaurant id is required' });
   if (!name || !name.trim()) return res.status(400).json({ error: 'Restaurant name is required' });
   const tagNames = normalizeTags(tags || []);
   tagNames.forEach(ensureTag);
+  const resolvedIconBg = iconBg != null && iconBg !== '' ? String(iconBg) : (iconBgLight === false || iconBgLight === 0 ? 'dark' : 'light');
   const restaurant = {
     id,
     name: name.trim(),
     orderingUrl: orderingUrl && orderingUrl.trim() ? orderingUrl.trim() : null,
     mainUrl: mainUrl && mainUrl.trim() ? mainUrl.trim() : null,
     iconUrl: iconUrl && iconUrl.trim() ? iconUrl.trim() : null,
+    iconBg: resolvedIconBg,
     foodType: foodType && foodType.trim() ? foodType.trim() : null,
     tags: tagNames,
     dateAdded: req.body.dateAdded || new Date().toISOString()
