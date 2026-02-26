@@ -147,7 +147,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const viewCardsBtn = document.getElementById('settings-view-cards-btn');
   const togoAppIconsWrap = document.getElementById('togo-app-icons-wrap');
   const togoAppIconsRow = document.getElementById('togo-app-icons-row');
+  const togoEditLayoutBtn = document.getElementById('togo-edit-layout-btn');
+  const togoEditLayoutActions = document.getElementById('togo-edit-layout-actions');
+  const togoSaveLayoutBtn = document.getElementById('togo-save-layout-btn');
+  const togoCancelLayoutBtn = document.getElementById('togo-cancel-layout-btn');
   let layoutMode = 'appIcons';
+  let togoEditLayoutMode = false;
   let restaurantFormIconUrl = null;
   let restaurantFormIconBg = 'light';
 
@@ -468,12 +473,14 @@ document.addEventListener('DOMContentLoaded', () => {
     updateFetchErrorBanner();
   };
 
-  const renderTogoAppIcons = (restaurants) => {
+  const renderTogoAppIcons = (restaurants, isEditLayout = false) => {
     if (!togoAppIconsRow) return;
     const list = Array.isArray(restaurants) ? restaurants : [];
     const recipes = Array.isArray(allRecipes) ? allRecipes : [];
     const editIconSvg = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>';
+    const dragHandleSvg = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>';
     togoAppIconsRow.innerHTML = '';
+    togoAppIconsRow.classList.toggle('togo-icons-draggable', isEditLayout);
     if (list.length === 0) {
       if (recipes.length === 0) return;
       const empty = document.createElement('div');
@@ -490,22 +497,33 @@ document.addEventListener('DOMContentLoaded', () => {
       const { bgColor, darkText } = getIconBgResolved(item.iconBg);
       const iconWrapClass = 'w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-white/10 group-hover:border-violet-500/50 transition-colors shadow-lg' + (darkText ? ' togo-icon-wrap' : '');
       const el = document.createElement('div');
-      el.className = 'flex flex-col items-center gap-2 w-24 flex-shrink-0 group cursor-pointer';
+      el.className = 'flex flex-col items-center gap-2 w-24 flex-shrink-0 group cursor-pointer togo-icon-item';
+      el.dataset.id = item.id;
+      if (isEditLayout) el.setAttribute('draggable', 'true');
       el.innerHTML = `
         <div class="relative">
+          ${isEditLayout ? `<span class="togo-drag-handle absolute -top-2 -left-2 w-6 h-6 rounded bg-elevated/90 border border-white/10 flex items-center justify-center text-text-muted cursor-grab active:cursor-grabbing z-10" title="Drag to reorder">${dragHandleSvg}</span>` : ''}
           <div class="${iconWrapClass}" style="background-color: ${escapeHtml(bgColor)}">
             ${iconSrc ? `<img src="${iconSrc}" alt="" class="w-fit-content h-fit-content p-[9px] object-contain togo-icon-img">` : `<span class="text-[10px] font-medium" style="color: ${darkText ? '#6B7280' : 'rgba(255,255,255,0.7)'}"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></span>`}
           </div>
-          <button type="button" class="togo-edit-btn absolute rounded-lg bg-elevated/90 border border-white/10 text-text-muted opacity-70 flex items-center justify-center shadow transition-all hover:opacity-100 hover:text-cyan-400 hover:border-violet-500/50 group-hover:opacity-100" style="width:25px;height:25px;top:-8px;right:-8px" title="Edit">${editIconSvg}</button>
+          ${!isEditLayout ? `<button type="button" class="togo-edit-btn absolute rounded-lg bg-elevated/90 border border-white/10 text-text-muted opacity-70 flex items-center justify-center shadow transition-all hover:opacity-100 hover:text-cyan-400 hover:border-violet-500/50 group-hover:opacity-100" style="width:25px;height:25px;top:-8px;right:-8px" title="Edit">${editIconSvg}</button>` : ''}
         </div>
         <span class="text-sm font-medium text-text-secondary text-center line-clamp-2 leading-tight">${escapeHtml(item.name)}</span>
       `;
-      el.addEventListener('click', (e) => {
-        if (e.target.closest('.togo-edit-btn')) return;
-        if (hasOrder) window.open(item.orderingUrl, '_blank', 'noopener,noreferrer');
-        else openRestaurantModal(item);
-      });
-      el.querySelector('.togo-edit-btn')?.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); openRestaurantModal(item); });
+      if (!isEditLayout) {
+        el.addEventListener('click', (e) => {
+          if (e.target.closest('.togo-edit-btn')) return;
+          if (hasOrder) window.open(item.orderingUrl, '_blank', 'noopener,noreferrer');
+          else openRestaurantModal(item);
+        });
+        el.querySelector('.togo-edit-btn')?.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); openRestaurantModal(item); });
+      } else {
+        el.addEventListener('click', (e) => {
+          if (e.target.closest('.togo-drag-handle')) return;
+          openRestaurantModal(item);
+        });
+        el.querySelector('.togo-drag-handle')?.addEventListener('click', (e) => { e.stopPropagation(); });
+      }
       const img = el.querySelector('.togo-icon-img');
       if (img) {
         img.addEventListener('error', () => {
@@ -517,6 +535,41 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
       togoAppIconsRow.appendChild(el);
+    });
+    if (isEditLayout) attachTogoIconsDragDrop();
+  };
+
+  const attachTogoIconsDragDrop = () => {
+    if (!togoAppIconsRow) return;
+    let draggedEl = null;
+    togoAppIconsRow.querySelectorAll('.togo-icon-item').forEach((el) => {
+      el.addEventListener('dragstart', (e) => {
+        draggedEl = el;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', el.dataset.id || '');
+        el.classList.add('togo-icon-dragging');
+      });
+      el.addEventListener('dragend', () => {
+        el.classList.remove('togo-icon-dragging');
+        draggedEl = null;
+      });
+      el.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if (draggedEl && draggedEl !== el) el.classList.add('togo-icon-drop-target');
+      });
+      el.addEventListener('dragleave', () => el.classList.remove('togo-icon-drop-target'));
+      el.addEventListener('drop', (e) => {
+        e.preventDefault();
+        el.classList.remove('togo-icon-drop-target');
+        if (!draggedEl || draggedEl === el) return;
+        const all = Array.from(togoAppIconsRow.querySelectorAll('.togo-icon-item'));
+        const fromIdx = all.indexOf(draggedEl);
+        const toIdx = all.indexOf(el);
+        if (fromIdx === -1 || toIdx === -1) return;
+        if (fromIdx < toIdx) el.after(draggedEl);
+        else el.before(draggedEl);
+      });
     });
   };
 
@@ -540,7 +593,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (togoAppIconsWrap) togoAppIconsWrap.classList.toggle('hidden', layoutMode !== 'appIcons');
-    if (layoutMode === 'appIcons' && togoAppIconsRow) renderTogoAppIcons(filteredRestaurants);
+    if (layoutMode === 'appIcons' && togoAppIconsRow) {
+      const list = togoEditLayoutMode ? allRestaurants : filteredRestaurants;
+      renderTogoAppIcons(list, togoEditLayoutMode);
+    }
+    syncTogoLayoutToolbar();
 
     const sortDate = (r) => (r && r.dateAdded ? new Date(r.dateAdded).getTime() : 0) || 0;
     const items = layoutMode === 'appIcons'
@@ -676,6 +733,14 @@ document.addEventListener('DOMContentLoaded', () => {
       viewCardsBtn.classList.toggle('bg-elevated', layoutMode !== 'cards');
       viewCardsBtn.classList.toggle('text-text-muted', layoutMode !== 'cards');
     }
+  };
+
+  const syncTogoLayoutToolbar = () => {
+    if (togoEditLayoutBtn) {
+      togoEditLayoutBtn.classList.toggle('hidden', layoutMode !== 'appIcons');
+      togoEditLayoutBtn.classList.toggle('togo-edit-layout-active', layoutMode === 'appIcons' && togoEditLayoutMode);
+    }
+    if (togoEditLayoutActions) togoEditLayoutActions.classList.toggle('hidden', layoutMode !== 'appIcons' || !togoEditLayoutMode);
   };
 
   const openRestaurantModal = (restaurant = null) => {
@@ -1597,8 +1662,47 @@ document.addEventListener('DOMContentLoaded', () => {
   if (viewAppIconsBtn) viewAppIconsBtn.addEventListener('click', () => setViewToggle('appIcons'));
   if (viewCardsBtn) viewCardsBtn.addEventListener('click', () => setViewToggle('cards'));
 
+  if (togoEditLayoutBtn) {
+    togoEditLayoutBtn.addEventListener('click', () => {
+      togoEditLayoutMode = true;
+      renderCards();
+    });
+  }
+  if (togoCancelLayoutBtn) {
+    togoCancelLayoutBtn.addEventListener('click', () => {
+      togoEditLayoutMode = false;
+      renderCards();
+    });
+  }
+  if (togoSaveLayoutBtn) {
+    togoSaveLayoutBtn.addEventListener('click', async () => {
+      if (!togoAppIconsRow) return;
+      const items = togoAppIconsRow.querySelectorAll('.togo-icon-item');
+      const ids = Array.from(items).map((el) => el.dataset.id).filter(Boolean);
+      if (ids.length === 0) {
+        togoEditLayoutMode = false;
+        renderCards();
+        return;
+      }
+      try {
+        const response = await fetch('/api/restaurants/order', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids })
+        });
+        if (!response.ok) throw new Error('Failed to save order');
+        togoEditLayoutMode = false;
+        await fetchRestaurants();
+      } catch (err) {
+        console.error('Save layout order:', err);
+        alert('Could not save order. Try again.');
+      }
+    });
+  }
+
   // Initial layout button state (settings modal)
   syncSettingsLayoutButtons();
+  syncTogoLayoutToolbar();
 
   if (cardFilter) cardFilter.addEventListener('change', renderCards);
   if (foodTypeFilter) foodTypeFilter.addEventListener('change', renderCards);

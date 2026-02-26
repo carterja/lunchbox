@@ -37,7 +37,7 @@
     </div>
   </header>
 
-  <main class="container mx-auto px-4 py-10 max-w-6xl">
+  <main class="container mx-auto px-4 py-8 max-w-6xl">
     <!-- Modal -->
     <div id="recipe-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
       <div class="modal-inner rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto border border-white/5" style="background-color: #111827;">
@@ -196,6 +196,9 @@
           </select>
         </div>
         <div class="flex items-center gap-2">
+          <button type="button" id="togo-edit-layout-btn" class="togo-edit-layout-icon-btn hidden p-2 rounded-lg border border-white/10 text-text-muted hover:text-white hover:border-violet-500/50 transition-colors" title="Edit layout">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
+          </button>
           <button id="open-modal-btn" class="btn-secondary px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             Recipe
@@ -213,6 +216,13 @@
       </div>
       <!-- App icon row (visible in app icon view only) -->
       <div id="togo-app-icons-wrap" class="hidden mb-6">
+        <div id="togo-icons-toolbar" class="flex items-center gap-2 mb-3">
+          <span id="togo-edit-layout-actions" class="hidden flex items-center gap-2">
+            <span class="text-sm text-text-muted">Drag to reorder</span>
+            <button type="button" id="togo-save-layout-btn" class="btn-primary py-1.5 px-3 text-sm rounded-lg">Save</button>
+            <button type="button" id="togo-cancel-layout-btn" class="btn-secondary py-1.5 px-3 text-sm rounded-lg">Cancel</button>
+          </span>
+        </div>
         <div id="togo-app-icons-row" class="flex flex-wrap gap-4">
           <!-- App icons rendered by JS -->
         </div>

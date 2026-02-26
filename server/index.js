@@ -10,7 +10,7 @@ const cheerio = require('cheerio');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const sharp = require('sharp');
-const { addRecipe, getAllRecipes, migrateFromJsonIfNeeded, removeRecipe, removeRecipes, updateRecipe, getAllRestaurants, addRestaurant, updateRestaurant, removeRestaurant, getAllFoodTypes, addFoodType, updateFoodType, removeFoodType, getAllTags, addTag, ensureTag, removeTag } = require('./db');
+const { addRecipe, getAllRecipes, migrateFromJsonIfNeeded, removeRecipe, removeRecipes, updateRecipe, getAllRestaurants, addRestaurant, updateRestaurant, removeRestaurant, updateRestaurantOrder, getAllFoodTypes, addFoodType, updateFoodType, removeFoodType, getAllTags, addTag, ensureTag, removeTag } = require('./db');
 const { chromium } = require('playwright');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -578,6 +578,15 @@ app.delete('/api/restaurants/:id', (req, res) => {
   const removed = removeRestaurant(id);
   if (!removed) return res.status(404).json({ error: 'Restaurant not found' });
   res.status(204).send();
+});
+
+app.patch('/api/restaurants/order', (req, res) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids) || ids.some((id) => typeof id !== 'string')) {
+    return res.status(400).json({ error: 'ids must be an array of restaurant ids' });
+  }
+  updateRestaurantOrder(ids);
+  res.json({ ok: true });
 });
 
 // Food types (for recipes and to-go)

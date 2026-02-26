@@ -52,6 +52,18 @@ try { db.exec('ALTER TABLE restaurants ADD COLUMN icon_bg TEXT'); } catch (_) {}
 try {
   db.exec(`UPDATE restaurants SET icon_bg = CASE WHEN COALESCE(icon_bg_light, 1) = 0 THEN 'dark' ELSE 'light' END WHERE icon_bg IS NULL OR icon_bg = ''`);
 } catch (_) {}
+try { db.exec('ALTER TABLE restaurants ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0'); } catch (_) {}
+// Backfill sort_order by date_added DESC so existing rows keep current order
+try {
+  const backfill = db.prepare(`
+    UPDATE restaurants SET sort_order = (
+      SELECT COUNT(*) FROM restaurants r2
+      WHERE r2.date_added > restaurants.date_added
+         OR (r2.date_added = restaurants.date_added AND r2.id < restaurants.id)
+    )
+  `);
+  backfill.run();
+} catch (_) {}
 db.exec(`
   CREATE TABLE IF NOT EXISTS tags (
     id TEXT PRIMARY KEY,
@@ -233,10 +245,10 @@ const removeRecipes = (ids) => {
 };
 
 // Restaurants
-const selectAllRestaurants = db.prepare('SELECT * FROM restaurants ORDER BY date_added DESC');
+const selectAllRestaurants = db.prepare('SELECT * FROM restaurants ORDER BY sort_order ASC, date_added DESC');
 const insertRestaurant = db.prepare(`
-  INSERT INTO restaurants (id, name, ordering_url, main_url, icon_url, icon_bg_light, icon_bg, food_type, tags, date_added)
-  VALUES (@id, @name, @ordering_url, @main_url, @icon_url, @icon_bg_light, @icon_bg, @food_type, @tags, @date_added)
+  INSERT INTO restaurants (id, name, ordering_url, main_url, icon_url, icon_bg_light, icon_bg, food_type, tags, date_added, sort_order)
+  VALUES (@id, @name, @ordering_url, @main_url, @icon_url, @icon_bg_light, @icon_bg, @food_type, @tags, @date_added, @sort_order)
 `);
 const deleteRestaurantById = db.prepare('DELETE FROM restaurants WHERE id = ?');
 const updateRestaurantById = db.prepare(`
@@ -244,6 +256,7 @@ const updateRestaurantById = db.prepare(`
   SET name = @name, ordering_url = @ordering_url, main_url = @main_url, icon_url = @icon_url, icon_bg_light = @icon_bg_light, icon_bg = @icon_bg, food_type = @food_type, tags = @tags
   WHERE id = @id
 `);
+const updateRestaurantSortOrder = db.prepare('UPDATE restaurants SET sort_order = ? WHERE id = ?');
 
 const restaurantToRow = (r) => {
   const iconBg = r.iconBg != null && r.iconBg !== '' ? String(r.iconBg) : (r.iconBgLight === false || r.iconBgLight === 0 ? 'dark' : 'light');
@@ -258,7 +271,8 @@ const restaurantToRow = (r) => {
     icon_bg: iconBg,
     food_type: r.foodType || null,
     tags: r.tags != null ? JSON.stringify(r.tags) : null,
-    date_added: r.dateAdded
+    date_added: r.dateAdded,
+    sort_order: r.sortOrder != null ? r.sortOrder : 0
   };
 };
 
@@ -270,16 +284,20 @@ const restaurantFromRow = (row) => ({
   iconUrl: row.icon_url ?? null,
   iconBgLight: row.icon_bg_light === undefined || row.icon_bg_light === null ? true : !!row.icon_bg_light,
   iconBg: row.icon_bg != null && row.icon_bg !== '' ? row.icon_bg : (row.icon_bg_light === 0 ? 'dark' : 'light'),
-  foodType: row.food_type || null,
+  foodType: row.food_type ?? null,
   tags: row.tags ? JSON.parse(row.tags) : [],
-  dateAdded: row.date_added
+  dateAdded: row.date_added,
+  sortOrder: row.sort_order != null ? row.sort_order : 0
 });
 
 const getAllRestaurants = () => selectAllRestaurants.all().map(restaurantFromRow);
 
 const addRestaurant = (restaurant) => {
-  insertRestaurant.run(restaurantToRow(restaurant));
-  return restaurant;
+  const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) + 1 as next FROM restaurants').get();
+  const row = restaurantToRow(restaurant);
+  row.sort_order = maxOrder.next;
+  insertRestaurant.run(row);
+  return { ...restaurant, sortOrder: maxOrder.next };
 };
 
 const updateRestaurant = (restaurant) => {
@@ -290,6 +308,16 @@ const updateRestaurant = (restaurant) => {
 const removeRestaurant = (id) => {
   const result = deleteRestaurantById.run(id);
   return result.changes > 0;
+};
+
+const updateRestaurantOrder = (ids) => {
+  if (!Array.isArray(ids) || ids.length === 0) return;
+  const run = db.transaction(() => {
+    ids.forEach((id, index) => {
+      updateRestaurantSortOrder.run(index, id);
+    });
+  });
+  run();
 };
 
 const isEmpty = () => countRecipes.get().count === 0;
@@ -339,6 +367,7 @@ module.exports = {
   addRestaurant,
   updateRestaurant,
   removeRestaurant,
+  updateRestaurantOrder,
   getAllFoodTypes,
   addFoodType,
   updateFoodType,
