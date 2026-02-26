@@ -300,6 +300,13 @@ const addRestaurant = (restaurant) => {
   return { ...restaurant, sortOrder: maxOrder.next };
 };
 
+/** Insert a restaurant with a specific id and sort_order (e.g. from backup). */
+const importRestaurant = (restaurant) => {
+  const row = restaurantToRow(restaurant);
+  row.sort_order = restaurant.sortOrder != null ? restaurant.sortOrder : 0;
+  insertRestaurant.run(row);
+};
+
 const updateRestaurant = (restaurant) => {
   const result = updateRestaurantById.run(restaurantToRow(restaurant));
   return result.changes > 0;
@@ -368,6 +375,7 @@ module.exports = {
   updateRestaurant,
   removeRestaurant,
   updateRestaurantOrder,
+  importRestaurant,
   getAllFoodTypes,
   addFoodType,
   updateFoodType,

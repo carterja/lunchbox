@@ -495,9 +495,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const iconSrc = safeImageUrl(item.iconUrl) || logoUrl(getDomainFromUrl(item.mainUrl || item.orderingUrl));
       const hasOrder = item.orderingUrl && item.orderingUrl.trim();
       const { bgColor, darkText } = getIconBgResolved(item.iconBg);
-      const iconWrapClass = 'w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-white/10 group-hover:border-violet-500/50 transition-colors shadow-lg' + (darkText ? ' togo-icon-wrap' : '');
+      const iconWrapClass = 'togo-icon-box w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-white/10 group-hover:border-violet-500/50 transition-colors shadow-lg' + (darkText ? ' togo-icon-wrap' : '');
       const el = document.createElement('div');
-      el.className = 'flex flex-col items-center gap-2 w-24 flex-shrink-0 group cursor-pointer togo-icon-item';
+      el.className = 'togo-icon-item flex flex-col items-center gap-2 w-24 flex-shrink-0 group cursor-pointer';
       el.dataset.id = item.id;
       if (isEditLayout) el.setAttribute('draggable', 'true');
       el.innerHTML = `
