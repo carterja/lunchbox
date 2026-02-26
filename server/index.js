@@ -615,8 +615,35 @@ app.post('/api/recipes/preview/url', async (req, res) => {
   if (!url || !url.trim()) return res.status(400).json({ error: 'URL is required' });
   if (!isUrlSafeForFetch(url)) return res.status(400).json({ error: 'URL not allowed' });
   console.log(`Attempting to scrape URL: ${url}`);
+
+  const tryFallbacks = async (reason) => {
+    console.log(`Trying Playwright fallback (${reason})`);
+    try {
+      const playwrightResult = await fetchWithPlaywright(url);
+      if (playwrightResult.instructions && playwrightResult.instructions.length > 0) {
+        return playwrightResult;
+      }
+    } catch (playwrightError) {
+      console.error('Playwright fetch failed:', playwrightError.message);
+    }
+    try {
+      const jinaResult = await fetchViaJinaReader(url);
+      return {
+        title: jinaResult.title || 'Recipe',
+        url,
+        type: 'General',
+        instructions: jinaResult.instructions || [],
+        ingredients: jinaResult.ingredients || []
+      };
+    } catch (jinaError) {
+      console.error('Jina fetch failed:', jinaError.message);
+      return null;
+    }
+  };
+
   try {
     let response;
+    let parsed;
     try {
       response = await axios.get(url, {
         headers: {
@@ -635,54 +662,37 @@ app.post('/api/recipes/preview/url', async (req, res) => {
         timeout: 10000,
         validateStatus: (status) => status >= 200 && status < 500
       });
+      parsed = parseRecipeFromHtml(response.data, url);
     } catch (error) {
-      if (error.response && error.response.status === 403) {
-        console.log('Got 403, trying fallback title extraction from body');
-        response = error.response;
-      } else {
-        throw error;
+      const reason = error.response ? `status ${error.response.status}` : error.message;
+      const fallback = await tryFallbacks(reason);
+      if (fallback) return res.json(fallback);
+      if (error.response) {
+        return res.status(error.response.status).json({ error: `Site returned error ${error.response.status}. Try the Image Upload tab and paste a screenshot instead.` });
       }
+      return res.status(500).json({ error: 'Failed to fetch URL: ' + error.message + '. Try the Image Upload tab and paste a screenshot instead.' });
     }
-
-    const parsed = parseRecipeFromHtml(response.data, url);
 
     const isBlocked = parsed.title.toLowerCase().includes('just a moment') || parsed.title.toLowerCase().includes('cloudflare') || response.status === 403;
     if (isBlocked || parsed.instructions.length === 0) {
-        try {
-          const playwrightResult = await fetchWithPlaywright(url);
-          if (playwrightResult.instructions && playwrightResult.instructions.length > 0) {
-            return res.json(playwrightResult);
-          }
-        } catch (playwrightError) {
-          console.error('Playwright fetch failed:', playwrightError.message);
-        }
-
-        try {
-          const jinaResult = await fetchViaJinaReader(url);
-          return res.json({
-            title: jinaResult.title || parsed.title.trim(),
-            url: url,
-            type: 'General',
-            instructions: jinaResult.instructions || [],
-            ingredients: jinaResult.ingredients || []
-          });
-        } catch (jinaError) {
-          if (isBlocked) {
-            return res.status(403).json({ error: 'Site is protected by Cloudflare or anti-bot measures. Please try uploading a screenshot instead.' });
-          }
-          return res.json(parsed);
-        }
+      const fallback = await tryFallbacks(isBlocked ? 'blocked page' : 'no instructions in page');
+      if (fallback) return res.json(fallback);
+      if (isBlocked) {
+        return res.status(403).json({ error: 'Site is protected by Cloudflare or anti-bot measures. Use the Image Upload tab and paste a screenshot of the recipe instead.' });
+      }
+      return res.json(parsed);
     }
 
     console.log(`Successfully scraped title: ${parsed.title.trim()}`);
     res.json(parsed);
   } catch (error) {
     console.error('Error scraping URL:', error.message);
+    const fallback = await tryFallbacks(error.message).catch(() => null);
+    if (fallback) return res.json(fallback);
     if (error.response) {
-      console.error('Status:', error.response.status);
       return res.status(error.response.status).json({ error: `Site returned error ${error.response.status}` });
     }
-    res.status(500).json({ error: 'Failed to scrape URL: ' + error.message });
+    return res.status(500).json({ error: 'Failed to scrape URL: ' + error.message + '. Try the Image Upload tab and paste a screenshot instead.' });
   }
 });
 
